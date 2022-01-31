@@ -56,12 +56,12 @@ func runRom(rom []byte) {
 		// set VX register
 		case 0x6:
 			handled = true
-			combined = (int(n2) << 8) & (int(n3) << 4) & int(n4)
-			registers.Index = combined
+			registers.VariableRegisters[n2] = b2
 		// set I register
 		case 0xA:
 			handled = true
-			registers.VariableRegisters[n2] = b2
+			combined = (int(n2) << 8) | (int(n3) << 4) | int(n4)
+			registers.Index = combined
 		}
 
 		if !handled {
