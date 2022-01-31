@@ -53,6 +53,11 @@ func runRom(rom []byte) {
 				handled = true
 				screen.Clear()
 			}
+		// [1NNN] jump to NNN
+		case 0x1:
+			handled = true
+			combined = (int(n2) << 8) | (int(n3) << 4) | int(n4)
+			pc = combined
 		// [6XNN] set VX register to NN
 		case 0x6:
 			handled = true
