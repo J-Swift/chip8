@@ -2,6 +2,7 @@ package chip8
 
 import (
 	"fmt"
+	"time"
 )
 
 type Screen struct {
@@ -53,7 +54,9 @@ func (s *Screen) Draw(x_coord byte, y_coord byte, spriteData []byte) bool {
 }
 
 func (s *Screen) doDraw() {
+	fmt.Printf("\033[0;0H")
 	for row := 0; row < s.rows; row++ {
 		fmt.Println(string(s.screenBuffer[row*s.columns : row*s.columns+s.columns]))
 	}
+	time.Sleep(50 * time.Millisecond)
 }

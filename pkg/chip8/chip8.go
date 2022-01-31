@@ -47,23 +47,28 @@ func runRom(rom []byte) {
 
 		handled = false
 		switch n1 {
-		// clear screen
 		case 0x0:
+			// [00E0] clear screen
 			if b1 == 0x00 && b2 == 0xE0 {
 				handled = true
 				screen.Clear()
 			}
-		// set VX register
+		// [6XNN] set VX register to NN
 		case 0x6:
 			handled = true
 			registers.VariableRegisters[n2] = b2
-		// set I register
+		// [7XNN] Add NN to VX register
+		case 0x7:
+			handled = true
+			registers.VariableRegisters[n2] = byte((int(registers.VariableRegisters[n2]) + int(b2)) % 0x1FF)
+		// [ANNN] set I register to NNN
 		case 0xA:
 			handled = true
 			combined = (int(n2) << 8) | (int(n3) << 4) | int(n4)
 			registers.Index = combined
-		// Display
+		// [DXYN] Display N pixels of data at coord X,Y
 		case 0xD:
+			// fmt.Printf("[%x%x] [%d] [%d] [%d]\n", b1, b2, registers.VariableRegisters[0], registers.VariableRegisters[1], registers.Index)
 			handled = true
 			x_coord := registers.VariableRegisters[n2]
 			y_coord := registers.VariableRegisters[n3]
