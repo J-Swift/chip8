@@ -1,0 +1,14 @@
+MAKEFLAGS += --silent
+
+.PHONY: %
+
+run:
+	go run cmd/chip8/main.go
+
+build:
+	@echo Building chip8
+	go build -o out/chip8 cmd/chip8/main.go
+
+clean:
+	@echo Cleaning
+	rm -rf out/*
