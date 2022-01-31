@@ -18,21 +18,23 @@ import (
 func runRom(rom []byte) {
 	memory := newRam(rom)
 	screen := newScreen()
+	registers := newRegisters()
 
 	pc := 0x200
 
-	var b1 byte
-	var b2 byte
-	var n1 byte
-	var n2 byte
-	var n3 byte
-	var n4 byte
+	var b1 int
+	var b2 int
+	var n1 int
+	var n2 int
+	var n3 int
+	var n4 int
+	var combined int
 
 	var handled bool
 	for {
-		b1 = memory.getAddress(pc)
+		b1 = int(memory.getAddress(pc))
 		pc += 1
-		b2 = memory.getAddress(pc)
+		b2 = int(memory.getAddress(pc))
 		pc += 1
 
 		n1 = (b1 & 0b11110000) >> 4
@@ -42,11 +44,15 @@ func runRom(rom []byte) {
 
 		handled = false
 		switch n1 {
-		case 0:
+		case 0x0:
 			if b1 == 0x00 && b2 == 0xE0 {
 				handled = true
 				screen.clear()
 			}
+		case 0xA:
+			handled = true
+			combined = (n2 << 8) & (n3 << 4) & n4
+			registers.Index = combined
 		}
 
 		if !handled {
