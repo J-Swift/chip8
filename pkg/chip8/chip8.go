@@ -1,7 +1,6 @@
 package chip8
 
 import (
-	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,76 +15,65 @@ import (
 // ANNN (set index register I)
 // DXYN (display/draw)
 
-func readBytes(bytes string, numBytes int) (string, string) {
-	if bytes == "" {
-		return "", ""
-	}
-	if numBytes >= len(bytes) {
-		return bytes, ""
-	}
-	return bytes[0:numBytes], bytes[numBytes:]
-}
+func runRom(rom []byte) {
+	memory := newRam(rom)
+	screen := newScreen()
 
-func printRom(rom string) {
-	pc := 0
-	var chars string
-	for len(rom) > 0 {
-		fmt.Printf("%08x ", pc)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s ", chars)
-		chars, rom = readBytes(rom, 2)
-		fmt.Printf("%s\n", chars)
-		pc += 16
+	pc := 0x200
+
+	var b1 byte
+	var b2 byte
+	var n1 byte
+	var n2 byte
+	var n3 byte
+	var n4 byte
+
+	var handled bool
+	for {
+		b1 = memory.getAddress(pc)
+		pc += 1
+		b2 = memory.getAddress(pc)
+		pc += 1
+
+		n1 = (b1 & 0b11110000) >> 4
+		n2 = b1 & 0b00001111
+		n3 = (b2 & 0b11110000) >> 4
+		n4 = b2 & 0b00001111
+
+		handled = false
+		switch n1 {
+		case 0:
+			if b1 == 0x00 && b2 == 0xE0 {
+				handled = true
+				screen.clear()
+			}
+		}
+
+		if !handled {
+			fmt.Printf("[b1 %d] [b2 %d] [n1 %d] [n2 %d] [n3 %d] [n4 %d]\n", b1, b2, n1, n2, n3, n4)
+			panic(fmt.Sprintf("Unhandled instruction [%02x%02x] at pc [%04x] adjusted pc [%04x]", b1, b2, pc-2, pc-2-0x200))
+		}
 	}
 }
 
-func loadRom(romPath string) (string, error) {
+func loadRom(romPath string) ([]byte, error) {
 	bytes, err := ioutil.ReadFile(romPath)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return hex.EncodeToString(bytes), nil
+	return bytes, nil
 }
 
 func Run(romPath string) {
-	fmt.Printf("Running [%s]...\n", romPath)
+	fmt.Printf("Running [%s]...\n\n", romPath)
 
 	rom, err := loadRom(romPath)
 	if err != nil {
 		fmt.Printf("Error loading rom: %s", err.Error())
 		os.Exit(1)
 	}
-	fmt.Println()
-	printRom(rom)
-	fmt.Println()
+
+	runRom(rom)
 
 	fmt.Println("Done.")
 }
