@@ -19,6 +19,7 @@ func runRom(rom []byte) {
 	memory := newRam(rom)
 	screen := newScreen()
 	registers := newRegisters()
+	stack := newStack()
 
 	pc := 0x200
 
@@ -62,6 +63,12 @@ func runRom(rom []byte) {
 				fmt.Println("\nInfinite loop detected. Exiting....\n")
 				return
 			}
+			pc = combined
+		// [2NNN] call subroutine at NNN
+		case 0x2:
+			handled = true
+			combined = (int(n2) << 8) | (int(n3) << 4) | int(n4)
+			stack.push(pc)
 			pc = combined
 		// [6XNN] set VX register to NN
 		case 0x6:
