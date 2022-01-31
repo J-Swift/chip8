@@ -58,6 +58,10 @@ func runRom(rom []byte) {
 		case 0x1:
 			handled = true
 			combined = (int(n2) << 8) | (int(n3) << 4) | int(n4)
+			if combined == pc-2 {
+				fmt.Println("\nInfinite loop detected. Exiting....\n")
+				return
+			}
 			pc = combined
 		// [6XNN] set VX register to NN
 		case 0x6:

@@ -26,6 +26,7 @@ func (s *Screen) Clear() {
 	for i := 0; i < len(s.screenBuffer); i++ {
 		s.screenBuffer[i] = s.offRune
 	}
+	s.doDraw()
 }
 
 func (s *Screen) Draw(x_coord int, y_coord int, spriteData []byte) bool {
