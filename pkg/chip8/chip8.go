@@ -62,6 +62,17 @@ func runRom(rom []byte) {
 			handled = true
 			combined = (int(n2) << 8) | (int(n3) << 4) | int(n4)
 			registers.Index = combined
+		// Display
+		case 0xD:
+			handled = true
+			x_coord := registers.VariableRegisters[n2]
+			y_coord := registers.VariableRegisters[n3]
+			spriteData := memory.getAddressMulti(registers.Index, int(n4))
+			if screen.Draw(x_coord, y_coord, spriteData) {
+				registers.VariableRegisters[0xF] = 1
+			} else {
+				registers.VariableRegisters[0xF] = 0
+			}
 		}
 
 		if !handled {

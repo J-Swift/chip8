@@ -27,3 +27,11 @@ func (r *Ram) getAddress(address int) byte {
 
 	return r.bytes[address]
 }
+
+func (r *Ram) getAddressMulti(address int, count int) []byte {
+	if !(0 <= address && (address+count) <= len(r.bytes)-1) {
+		panic(fmt.Sprintf("[%d] Invalid address [%d] count [%d]", len(r.bytes), address, count))
+	}
+
+	return r.bytes[address : address+count]
+}
