@@ -22,19 +22,22 @@ func runRom(rom []byte) {
 
 	pc := 0x200
 
-	var b1 int
-	var b2 int
-	var n1 int
-	var n2 int
-	var n3 int
-	var n4 int
+	// Instruction helpers
+	var b1 byte
+	var b2 byte
+	var n1 byte
+	var n2 byte
+	var n3 byte
+	var n4 byte
+
+	// Conditoinally used helpers
 	var combined int
 
 	var handled bool
 	for {
-		b1 = int(memory.getAddress(pc))
+		b1 = memory.getAddress(pc)
 		pc += 1
-		b2 = int(memory.getAddress(pc))
+		b2 = memory.getAddress(pc)
 		pc += 1
 
 		n1 = (b1 & 0b11110000) >> 4
@@ -44,15 +47,21 @@ func runRom(rom []byte) {
 
 		handled = false
 		switch n1 {
+		// clear screen
 		case 0x0:
 			if b1 == 0x00 && b2 == 0xE0 {
 				handled = true
-				screen.clear()
+				screen.Clear()
 			}
+		// set VX register
+		case 0x6:
+			handled = true
+			combined = (int(n2) << 8) & (int(n3) << 4) & int(n4)
+			registers.Index = combined
+		// set I register
 		case 0xA:
 			handled = true
-			combined = (n2 << 8) & (n3 << 4) & n4
-			registers.Index = combined
+			registers.VariableRegisters[n2] = b2
 		}
 
 		if !handled {
