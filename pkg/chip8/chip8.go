@@ -35,6 +35,7 @@ func runRom(rom []byte) {
 
 	var handled bool
 	for {
+		// fmt.Printf("Reading PC [%x]\n", pc)
 		b1 = memory.getAddress(pc)
 		pc += 1
 		b2 = memory.getAddress(pc)
@@ -78,7 +79,7 @@ func runRom(rom []byte) {
 			x_coord := registers.VariableRegisters[n2]
 			y_coord := registers.VariableRegisters[n3]
 			spriteData := memory.getAddressMulti(registers.Index, int(n4))
-			if screen.Draw(x_coord, y_coord, spriteData) {
+			if screen.Draw(int(x_coord), int(y_coord), spriteData) {
 				registers.VariableRegisters[0xF] = 1
 			} else {
 				registers.VariableRegisters[0xF] = 0
@@ -94,9 +95,13 @@ func runRom(rom []byte) {
 
 func loadRom(romPath string) ([]byte, error) {
 	bytes, err := ioutil.ReadFile(romPath)
+	// _, err := ioutil.ReadFile(romPath)
 	if err != nil {
 		return nil, err
 	}
+	// bytes := []byte{
+	// 	0x62, 0x0A, 0x63, 0x0C, 0xA2, 0x20, 0xD2, 0x36, 0x12, 0x40, 0xBA, 0x7C, 0xD6, 0xFE, 0x54, 0xAA,
+	// }
 	return bytes, nil
 }
 

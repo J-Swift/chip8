@@ -21,33 +21,43 @@ func newScreen() *Screen {
 }
 
 func (s *Screen) Clear() {
-	s.pixels = make([]bool, s.columns*s.rows)
-	s.screenBuffer = make([]rune, s.columns*s.rows)
+	s.pixels = make([]bool, int(s.columns)*int(s.rows))
+	s.screenBuffer = make([]rune, int(s.columns)*int(s.rows))
 	for i := 0; i < len(s.screenBuffer); i++ {
 		s.screenBuffer[i] = s.offRune
 	}
 }
 
-func (s *Screen) Draw(x_coord byte, y_coord byte, spriteData []byte) bool {
+func (s *Screen) Draw(x_coord int, y_coord int, spriteData []byte) bool {
 	didTurnOffPixel := false
 
-	x_coord = x_coord % (byte(s.columns) - 1)
-	y_coord = y_coord % (byte(s.rows) - 1)
+	wrapped_x_coord := x_coord % (s.columns - 1)
+	wrapped_y_coord := y_coord % (s.rows - 1)
 
-	for currentY := y_coord; currentY < byte(s.rows) && int(currentY) < (int(y_coord)+len(spriteData)); currentY++ {
-		offset := y_coord*byte(s.columns) + x_coord
-		if spriteData[currentY-y_coord] == 0 {
-			// flipping a pixel from on to off
-			if s.pixels[offset] {
-				didTurnOffPixel = true
+	for row := 0; row < len(spriteData); row++ {
+		for col := 0; col < 8; col++ {
+			target_x_coord := wrapped_x_coord + col
+			target_y_coord := wrapped_y_coord + row
+			if target_x_coord >= s.columns || target_y_coord >= s.rows {
+				continue
 			}
-			s.pixels[offset] = false
-			s.screenBuffer[offset] = s.offRune
-		} else {
-			s.pixels[offset] = true
-			s.screenBuffer[offset] = s.onRune
+			screenOffset := target_y_coord*s.rows + target_x_coord
+			currentSpriteBitIsSet := ((spriteData[row] << col) & 0b10000000) > 0
+
+			if currentSpriteBitIsSet {
+				// flipping a pixel from on to off
+				if s.pixels[screenOffset] {
+					didTurnOffPixel = true
+					s.pixels[screenOffset] = false
+					s.screenBuffer[screenOffset] = s.offRune
+				} else {
+					s.pixels[screenOffset] = true
+					s.screenBuffer[screenOffset] = s.onRune
+				}
+			}
 		}
 	}
+
 	s.doDraw()
 
 	return didTurnOffPixel
@@ -56,7 +66,7 @@ func (s *Screen) Draw(x_coord byte, y_coord byte, spriteData []byte) bool {
 func (s *Screen) doDraw() {
 	fmt.Printf("\033[0;0H")
 	for row := 0; row < s.rows; row++ {
-		fmt.Println(string(s.screenBuffer[row*s.columns : row*s.columns+s.columns]))
+		fmt.Println(string(s.screenBuffer[int(row)*int(s.columns) : int(row)*int(s.columns)+int(s.columns)]))
 	}
 	time.Sleep(50 * time.Millisecond)
 }
