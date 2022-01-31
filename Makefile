@@ -3,7 +3,7 @@ MAKEFLAGS += --silent
 .PHONY: %
 
 run:
-	go run cmd/chip8/main.go
+	go run cmd/chip8/main.go $(ARGS)
 
 build:
 	@echo Building chip8
