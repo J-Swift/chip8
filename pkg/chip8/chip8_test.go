@@ -101,7 +101,25 @@ func TestSkipIfVxEqualToNumber(t *testing.T) {
 
 // 4XNN
 func TestSkipIfVxNotEqualToNumber(t *testing.T) {
-	t.Skip("TODO: 4XNN")
+	t.Run("when equal", func(t *testing.T) {
+		rom := []byte{0x4A, 0x43}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xA] = 0x43
+		cpu.tick()
+		if cpu.pc != 0x202 {
+			t.Errorf("SkipWhenNotEqual should have gone to 0x202 when equal but it was [0x%X]", cpu.pc)
+		}
+	})
+
+	t.Run("when not equal", func(t *testing.T) {
+		rom := []byte{0x4A, 0x43}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xA] = 0x42
+		cpu.tick()
+		if cpu.pc != 0x204 {
+			t.Errorf("SkipWhenNotEqual should have gone to 0x204 when not equal but it was [0x%X]", cpu.pc)
+		}
+	})
 }
 
 // 5XY0
