@@ -6,6 +6,10 @@ import (
 	"os"
 )
 
+type quirks struct {
+	shiftLoadsYRegister                 bool
+}
+
 // https://tobiasvl.github.io/blog/write-a-chip-8-emulator
 
 // 00E0 (clear screen)
@@ -20,6 +24,10 @@ func runRom(rom []byte) {
 	screen := newScreen()
 	registers := newRegisters()
 	stack := newStack()
+
+	config := quirks{
+		shiftLoadsYRegister:                 false,
+	}
 
 	pc := 0x200
 
@@ -133,6 +141,14 @@ func runRom(rom []byte) {
 					registers.VariableRegisters[0xF] = 0
 				}
 				registers.VariableRegisters[n2] -= registers.VariableRegisters[n3]
+			// [8XY6] Shift VX right with carry
+			case 0x6:
+				handled = true
+				if config.shiftLoadsYRegister {
+					registers.VariableRegisters[n2] = registers.VariableRegisters[n3]
+				}
+				registers.VariableRegisters[0xF] = registers.VariableRegisters[n2] & 0b1
+				registers.VariableRegisters[n2] >>= 1
 			// [8XY7] Subtract VX from VY with carry
 			case 0x7:
 				handled = true
@@ -142,6 +158,14 @@ func runRom(rom []byte) {
 					registers.VariableRegisters[0xF] = 0
 				}
 				registers.VariableRegisters[n2] = registers.VariableRegisters[n3] - registers.VariableRegisters[n2]
+			// [8XYE] Shift VX left with carry
+			case 0xE:
+				handled = true
+				if config.shiftLoadsYRegister {
+					registers.VariableRegisters[n2] = registers.VariableRegisters[n3]
+				}
+				registers.VariableRegisters[0xF] = (registers.VariableRegisters[n2] >> 7) & 0b1
+				registers.VariableRegisters[n2] <<= 1
 			}
 		// [9XY0] skip if VX not equal to VY
 		case 0x9:
