@@ -190,7 +190,7 @@ func TestSetVxToVyDirect(t *testing.T) {
 func TestSetVxToVyBinaryOR(t *testing.T) {
 	for vx := byte(0x0); vx <= 0xF; vx++ {
 		for vy := byte(0x0); vy <= 0xF; vy++ {
-			t.Run(fmt.Sprintf("Set register V%X to register V%X", vx, vy), func(t *testing.T) {
+			t.Run(fmt.Sprintf("BinaryOR register V%X with register V%X", vx, vy), func(t *testing.T) {
 				rom := []byte{0x80 | vx, 0x01 | (vy << 4)}
 				cpu := newCpu(rom)
 				cpu.registers.VariableRegisters[vx] = 0x33
@@ -209,7 +209,7 @@ func TestSetVxToVyBinaryOR(t *testing.T) {
 func TestSetVxToVyBinaryAND(t *testing.T) {
 	for vx := byte(0x0); vx <= 0xF; vx++ {
 		for vy := byte(0x0); vy <= 0xF; vy++ {
-			t.Run(fmt.Sprintf("Set register V%X to register V%X", vx, vy), func(t *testing.T) {
+			t.Run(fmt.Sprintf("BinaryAND register V%X with register V%X", vx, vy), func(t *testing.T) {
 				rom := []byte{0x80 | vx, 0x02 | (vy << 4)}
 				cpu := newCpu(rom)
 				cpu.registers.VariableRegisters[vx] = 0x33
@@ -228,7 +228,7 @@ func TestSetVxToVyBinaryAND(t *testing.T) {
 func TestSetVxToVyBinaryXOR(t *testing.T) {
 	for vx := byte(0x0); vx <= 0xF; vx++ {
 		for vy := byte(0x0); vy <= 0xF; vy++ {
-			t.Run(fmt.Sprintf("Set register V%X to register V%X", vx, vy), func(t *testing.T) {
+			t.Run(fmt.Sprintf("BinaryXOR register V%X with register V%X", vx, vy), func(t *testing.T) {
 				rom := []byte{0x80 | vx, 0x03 | (vy << 4)}
 				cpu := newCpu(rom)
 				cpu.registers.VariableRegisters[vx] = 0x33
@@ -245,7 +245,73 @@ func TestSetVxToVyBinaryXOR(t *testing.T) {
 
 // 8XY4
 func TestAddVyToVxWithCarry(t *testing.T) {
-	t.Skip("TODO: 8XY4")
+	t.Run("Add register VX with register VY no overflow smoketest", func(t *testing.T) {
+		rom := []byte{0x8A, 0xB4}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xA] = 0xFE
+		cpu.registers.VariableRegisters[0xB] = 0x01
+		expected := byte(0xFF)
+		cpu.tick()
+		if cpu.registers.VariableRegisters[0xA] != expected {
+			t.Errorf("AddRegistersWithCarry register [VA] should have been set to [255] but it was [0x%X]", cpu.registers.VariableRegisters[0xA])
+		}
+		if cpu.registers.VariableRegisters[0xF] != 0 {
+			t.Errorf("AddRegistersWithCarry carry flag should not have been set when adding [0x%02X] and [0x%02X]", 0xFE, 0x01)
+		}
+	})
+
+	t.Run("Add register VX with register VY with overflow smoketest", func(t *testing.T) {
+		rom := []byte{0x8A, 0xB4}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xA] = 0xFE
+		cpu.registers.VariableRegisters[0xB] = 0x02
+		expected := byte(0x0)
+		cpu.tick()
+		if cpu.registers.VariableRegisters[0xA] != expected {
+			t.Errorf("AddRegistersWithCarry register [VA] should have been set to [0] but it was [0x%X]", cpu.registers.VariableRegisters[0xA])
+		}
+		if cpu.registers.VariableRegisters[0xF] != 1 {
+			t.Errorf("AddRegistersWithCarry carry flag should have been set when adding [0x%02X] and [0x%02X]", 0xFE, 0x02)
+		}
+	})
+
+	// NOTE(jpr): no 0xF because its used for carry flag
+	for vx := byte(0x0); vx <= 0xE; vx++ {
+		for vy := byte(0x0); vy <= 0xE; vy++ {
+			if vx == vy {
+				continue
+			}
+			t.Run(fmt.Sprintf("Add register V%X with register V%X no overflow", vx, vy), func(t *testing.T) {
+				rom := []byte{0x80 | vx, 0x04 | (vy << 4)}
+				cpu := newCpu(rom)
+				cpu.registers.VariableRegisters[vx] = 0x33
+				cpu.registers.VariableRegisters[vy] = 0xAB
+				expected := cpu.registers.VariableRegisters[vx] + cpu.registers.VariableRegisters[vy]
+				cpu.tick()
+				if cpu.registers.VariableRegisters[vx] != expected {
+					t.Errorf("AddRegistersWithCarry register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
+				}
+				if cpu.registers.VariableRegisters[0xF] != 0 {
+					t.Errorf("AddRegistersWithCarry carry flag should not have been set when adding [%X] and [%X]", vx, vy)
+				}
+			})
+
+			t.Run(fmt.Sprintf("Add register V%X with register V%X with overflow", vx, vy), func(t *testing.T) {
+				rom := []byte{0x80 | vx, 0x04 | (vy << 4)}
+				cpu := newCpu(rom)
+				cpu.registers.VariableRegisters[vx] = 0xFB
+				cpu.registers.VariableRegisters[vy] = 0xAB
+				expected := cpu.registers.VariableRegisters[vx] + cpu.registers.VariableRegisters[vy]
+				cpu.tick()
+				if cpu.registers.VariableRegisters[vx] != expected {
+					t.Errorf("AddRegistersWithCarry register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
+				}
+				if cpu.registers.VariableRegisters[0xF] != 1 {
+					t.Errorf("AddRegistersWithCarry carry flag should have been set when adding [%X] and [%X]", vx, vy)
+				}
+			})
+		}
+	}
 }
 
 // 8XY5
