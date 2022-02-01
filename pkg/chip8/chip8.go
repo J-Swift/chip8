@@ -81,6 +81,12 @@ func runRom(rom []byte) {
 			if registers.VariableRegisters[n2] != b2 {
 				pc += 2
 			}
+		// [5XY0] skip if VX equal to VY
+		case 0x5:
+			handled = true
+			if registers.VariableRegisters[n2] == registers.VariableRegisters[n3] {
+				pc += 2
+			}
 		// [6XNN] set VX register to NN
 		case 0x6:
 			handled = true
@@ -89,6 +95,12 @@ func runRom(rom []byte) {
 		case 0x7:
 			handled = true
 			registers.VariableRegisters[n2] = byte((int(registers.VariableRegisters[n2]) + int(b2)) % 0x1FF)
+		// [9XY0] skip if VX not equal to VY
+		case 0x9:
+			handled = true
+			if registers.VariableRegisters[n2] != registers.VariableRegisters[n3] {
+				pc += 2
+			}
 		// [ANNN] set I register to NNN
 		case 0xA:
 			handled = true
