@@ -176,9 +176,10 @@ func TestSetVxToVyDirect(t *testing.T) {
 				cpu := newCpu(rom)
 				cpu.registers.VariableRegisters[vx] = 0x33
 				cpu.registers.VariableRegisters[vy] = 0xAB
+				expected := cpu.registers.VariableRegisters[vy]
 				cpu.tick()
-				if cpu.registers.VariableRegisters[vx] != cpu.registers.VariableRegisters[vy] {
-					t.Errorf("SetRegisterToRegisterDirect register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, cpu.registers.VariableRegisters[vy], cpu.registers.VariableRegisters[vx])
+				if cpu.registers.VariableRegisters[vx] != expected {
+					t.Errorf("SetRegisterToRegisterDirect register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
 				}
 			})
 		}
@@ -194,9 +195,10 @@ func TestSetVxToVyBinaryOR(t *testing.T) {
 				cpu := newCpu(rom)
 				cpu.registers.VariableRegisters[vx] = 0x33
 				cpu.registers.VariableRegisters[vy] = 0xAB
+				expected := cpu.registers.VariableRegisters[vx] | cpu.registers.VariableRegisters[vy]
 				cpu.tick()
-				if cpu.registers.VariableRegisters[vx] != cpu.registers.VariableRegisters[vx]|cpu.registers.VariableRegisters[vy] {
-					t.Errorf("SetRegisterToRegisterBinaryOR register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, cpu.registers.VariableRegisters[vx]|cpu.registers.VariableRegisters[vy], cpu.registers.VariableRegisters[vx])
+				if cpu.registers.VariableRegisters[vx] != expected {
+					t.Errorf("SetRegisterToRegisterBinaryOR register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
 				}
 			})
 		}
@@ -212,9 +214,10 @@ func TestSetVxToVyBinaryAND(t *testing.T) {
 				cpu := newCpu(rom)
 				cpu.registers.VariableRegisters[vx] = 0x33
 				cpu.registers.VariableRegisters[vy] = 0xAB
+				expected := cpu.registers.VariableRegisters[vx] & cpu.registers.VariableRegisters[vy]
 				cpu.tick()
-				if cpu.registers.VariableRegisters[vx] != cpu.registers.VariableRegisters[vx]&cpu.registers.VariableRegisters[vy] {
-					t.Errorf("SetRegisterToRegisterBinaryAND register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, cpu.registers.VariableRegisters[vx]&cpu.registers.VariableRegisters[vy], cpu.registers.VariableRegisters[vx])
+				if cpu.registers.VariableRegisters[vx] != expected {
+					t.Errorf("SetRegisterToRegisterBinaryAND register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
 				}
 			})
 		}
@@ -223,7 +226,21 @@ func TestSetVxToVyBinaryAND(t *testing.T) {
 
 // 8XY3
 func TestSetVxToVyBinaryXOR(t *testing.T) {
-	t.Skip("TODO: 8XY3")
+	for vx := byte(0x0); vx <= 0xF; vx++ {
+		for vy := byte(0x0); vy <= 0xF; vy++ {
+			t.Run(fmt.Sprintf("Set register V%X to register V%X", vx, vy), func(t *testing.T) {
+				rom := []byte{0x80 | vx, 0x03 | (vy << 4)}
+				cpu := newCpu(rom)
+				cpu.registers.VariableRegisters[vx] = 0x33
+				cpu.registers.VariableRegisters[vy] = 0xAB
+				expected := cpu.registers.VariableRegisters[vx] ^ cpu.registers.VariableRegisters[vy]
+				cpu.tick()
+				if cpu.registers.VariableRegisters[vx] != expected {
+					t.Errorf("SetRegisterToRegisterBinaryAND register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
+				}
+			})
+		}
+	}
 }
 
 // 8XY4
