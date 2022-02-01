@@ -30,7 +30,19 @@ func TestSanityCheck(t *testing.T) {
 
 // 00E0
 func TestClearScreen(t *testing.T) {
-	t.Skip("TODO: 00E0")
+	rom := []byte{0x00, 0xE0}
+	cpu := newCpu(rom)
+	for i := 0; i < len(cpu.screen.pixels); i++ {
+		cpu.screen.pixels[i] = true
+	}
+	cpu.tick()
+	for i := 0; i < len(cpu.screen.pixels); i++ {
+		if cpu.screen.pixels[i] {
+			y := i / cpu.screen.columns
+			x := (i - y*cpu.screen.columns)
+			t.Errorf("screen should be blanked but [%dx%d] was lit", x, y)
+		}
+	}
 }
 
 // 00EE
