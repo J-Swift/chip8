@@ -201,8 +201,8 @@ func (cpu *cpu) tick() {
 			handled = true
 			vx := cpu.registers.VariableRegisters[n2]
 			hundreds := vx / 100
-			tens := (vx - (hundreds * 100)) / 10
-			ones := vx - (hundreds * 100) - (tens * 10)
+			tens := (vx % 100) / 10
+			ones := (vx % 10)
 			cpu.memory.setAddress(cpu.registers.Index, hundreds)
 			cpu.memory.setAddress(cpu.registers.Index+1, tens)
 			cpu.memory.setAddress(cpu.registers.Index+2, ones)
