@@ -230,19 +230,12 @@ func (cpu *cpu) tick() {
 	}
 
 	if !handled {
-		fmt.Printf("[b1 %d] [b2 %d] [n1 %d] [n2 %d] [n3 %d] [n4 %d]\n", b1, b2, n1, n2, n3, n4)
-		panic(fmt.Sprintf("Unhandled instruction [%02x%02x] at pc [%04x] adjusted pc [%04x]", b1, b2, cpu.pc-2, cpu.pc-2-0x200))
+		fmt.Printf("[b1 0x%02X] [b2 0x%02X] [n1 0x%X] [n2 0x%X] [n3 0x%X] [n4 0x%X]\n", b1, b2, n1, n2, n3, n4)
+		panic(fmt.Sprintf("Unhandled instruction [0x%02X%02X] at pc [0x%04X] adjusted pc [0x%04X]", b1, b2, cpu.pc-2, cpu.pc-2-0x200))
 	}
 }
 
 // https://tobiasvl.github.io/blog/write-a-chip-8-emulator
-
-// 00E0 (clear screen)
-// 1NNN (jump)
-// 6XNN (set register VX)
-// 7XNN (add value to register VX)
-// ANNN (set index register I)
-// DXYN (display/draw)
 
 func runRom(rom []byte) {
 	cpu := newCpu(rom)
