@@ -16,16 +16,20 @@ type Screen struct {
 
 func newScreen() *Screen {
 	screen := Screen{columns: 64, rows: 32, offRune: '⬛', onRune: '🟨'}
-	screen.Clear()
+	screen.resetBuffers()
 	return &screen
 }
 
-func (s *Screen) Clear() {
+func (s *Screen) resetBuffers() {
 	s.pixels = make([]bool, int(s.columns)*int(s.rows))
 	s.screenBuffer = make([]rune, int(s.columns)*int(s.rows))
 	for i := 0; i < len(s.screenBuffer); i++ {
 		s.screenBuffer[i] = s.offRune
 	}
+}
+
+func (s *Screen) Clear() {
+	s.resetBuffers()
 	s.doDraw()
 }
 
