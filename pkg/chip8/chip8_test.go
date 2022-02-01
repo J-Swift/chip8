@@ -78,7 +78,25 @@ func TestCallSubroutineAtAddress(t *testing.T) {
 
 // 3XNN
 func TestSkipIfVxEqualToNumber(t *testing.T) {
-	t.Skip("TODO: 3XNN")
+	t.Run("when equal", func(t *testing.T) {
+		rom := []byte{0x3A, 0x43}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xA] = 0x43
+		cpu.tick()
+		if cpu.pc != 0x204 {
+			t.Errorf("SkipWhenEqual should have gone to 0x202 when equal but it was [0x%X]", cpu.pc)
+		}
+	})
+
+	t.Run("when not equal", func(t *testing.T) {
+		rom := []byte{0x3A, 0x43}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xA] = 0x42
+		cpu.tick()
+		if cpu.pc != 0x202 {
+			t.Errorf("SkipWhenEqual should have gone to 0x202 when not equal but it was [0x%X]", cpu.pc)
+		}
+	})
 }
 
 // 4XNN
