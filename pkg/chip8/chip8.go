@@ -95,6 +95,18 @@ func runRom(rom []byte) {
 			} else {
 				registers.VariableRegisters[0xF] = 0
 			}
+		case 0xF:
+			// [FX33] binary-coded decimal conversion
+			if b2 == 0x33 {
+				handled = true
+				vx := registers.VariableRegisters[n2]
+				hundreds := vx / 100
+				tens := (vx - (hundreds * 100)) / 10
+				ones := vx - (hundreds * 100) - (tens * 10)
+				memory.setAddress(registers.Index, hundreds)
+				memory.setAddress(registers.Index+1, tens)
+				memory.setAddress(registers.Index+2, ones)
+			}
 		}
 
 		if !handled {

@@ -35,3 +35,7 @@ func (r *Ram) getAddressMulti(address int, count int) []byte {
 
 	return r.bytes[address : address+count]
 }
+
+func (r *Ram) setAddress(address int, value byte) {
+	r.bytes[address] = value
+}
