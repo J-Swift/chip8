@@ -1,6 +1,7 @@
 package chip8
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -149,7 +150,16 @@ func TestSkipIfVxEqualToVy(t *testing.T) {
 
 // 6XNN
 func TestSetVxToNumber(t *testing.T) {
-	t.Skip("TODO: 6XNN")
+	for registerIdx := byte(0x0); registerIdx <= 0xF; registerIdx++ {
+		t.Run(fmt.Sprintf("Set register V%X to number", registerIdx), func(t *testing.T) {
+			rom := []byte{0x60 | registerIdx, 0xAB}
+			cpu := newCpu(rom)
+			cpu.tick()
+			if cpu.registers.VariableRegisters[registerIdx] != 0xAB {
+				t.Errorf("SetRegisterToNumber register [V%X] should have gone to 0xAB when not equal but it was [0x%X]", registerIdx, cpu.registers.VariableRegisters[registerIdx])
+			}
+		})
+	}
 }
 
 // 7XNN
