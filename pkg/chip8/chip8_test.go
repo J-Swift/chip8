@@ -84,7 +84,7 @@ func TestSkipIfVxEqualToNumber(t *testing.T) {
 		cpu.registers.VariableRegisters[0xA] = 0x43
 		cpu.tick()
 		if cpu.pc != 0x204 {
-			t.Errorf("SkipWhenEqual should have gone to 0x202 when equal but it was [0x%X]", cpu.pc)
+			t.Errorf("SkipWhenEqual should have gone to 0x204 when equal but it was [0x%X]", cpu.pc)
 		}
 	})
 
@@ -124,7 +124,27 @@ func TestSkipIfVxNotEqualToNumber(t *testing.T) {
 
 // 5XY0
 func TestSkipIfVxEqualToVy(t *testing.T) {
-	t.Skip("TODO: 5XY0")
+	t.Run("when equal", func(t *testing.T) {
+		rom := []byte{0x5A, 0xB0}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xA] = 0x43
+		cpu.registers.VariableRegisters[0xB] = 0x43
+		cpu.tick()
+		if cpu.pc != 0x204 {
+			t.Errorf("SkipWhenEqualRegisters should have gone to 0x204 when equal but it was [0x%X]", cpu.pc)
+		}
+	})
+
+	t.Run("when not equal", func(t *testing.T) {
+		rom := []byte{0x5A, 0xB0}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xA] = 0x43
+		cpu.registers.VariableRegisters[0xB] = 0x42
+		cpu.tick()
+		if cpu.pc != 0x202 {
+			t.Errorf("SkipWhenEqualRegisters should have gone to 0x202 when not equal but it was [0x%X]", cpu.pc)
+		}
+	})
 }
 
 // 6XNN
