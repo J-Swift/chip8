@@ -38,9 +38,8 @@ func runRom(rom []byte) {
 	for {
 		// fmt.Printf("Reading PC [%x]\n", pc)
 		b1 = memory.getAddress(pc)
-		pc += 1
-		b2 = memory.getAddress(pc)
-		pc += 1
+		b2 = memory.getAddress(pc + 1)
+		pc += 2
 
 		n1 = (b1 & 0b11110000) >> 4
 		n2 = b1 & 0b00001111
@@ -70,6 +69,18 @@ func runRom(rom []byte) {
 			combined = (int(n2) << 8) | (int(n3) << 4) | int(n4)
 			stack.push(pc)
 			pc = combined
+		// [3XNN] skip if VX equal to NN
+		case 0x3:
+			handled = true
+			if registers.VariableRegisters[n2] == b2 {
+				pc += 2
+			}
+		// [4XNN] skip if VX not equal to NN
+		case 0x4:
+			handled = true
+			if registers.VariableRegisters[n2] != b2 {
+				pc += 2
+			}
 		// [6XNN] set VX register to NN
 		case 0x6:
 			handled = true
