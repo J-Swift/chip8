@@ -9,6 +9,7 @@ import (
 type quirks struct {
 	shiftLoadsYRegister                 bool
 	storeAndLoadIncrementsIndexRegister bool
+	setOverflowOnAddToIndex             bool
 }
 
 // https://tobiasvl.github.io/blog/write-a-chip-8-emulator
@@ -29,6 +30,7 @@ func runRom(rom []byte) {
 	config := quirks{
 		shiftLoadsYRegister:                 false,
 		storeAndLoadIncrementsIndexRegister: false,
+		setOverflowOnAddToIndex:             true,
 	}
 
 	pc := 0x200
@@ -193,7 +195,17 @@ func runRom(rom []byte) {
 				registers.VariableRegisters[0xF] = 0
 			}
 		case 0xF:
-			if b2 == 0x33 { // [FX33] binary-coded decimal conversion
+			if b2 == 0x1E { // [FX1E] Add to index
+				handled = true
+				if config.setOverflowOnAddToIndex {
+					if int(registers.Index)+int(registers.VariableRegisters[n2]) > 0xFFF {
+						registers.VariableRegisters[0xF] = 1
+					} else {
+						registers.VariableRegisters[0xF] = 0
+					}
+				}
+				registers.Index = (registers.Index + int(registers.VariableRegisters[n2])) % 0x1000
+			} else if b2 == 0x33 { // [FX33] binary-coded decimal conversion
 				handled = true
 				vx := registers.VariableRegisters[n2]
 				hundreds := vx / 100
