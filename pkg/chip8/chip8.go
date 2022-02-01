@@ -73,7 +73,7 @@ func runRom(rom []byte) {
 			handled = true
 			combined = (int(n2) << 8) | (int(n3) << 4) | int(n4)
 			if combined == pc-2 {
-				fmt.Println("\nInfinite loop detected. Exiting....\n")
+				fmt.Printf("\nInfinite loop detected. Exiting....\n\n")
 				return
 			}
 			pc = combined

@@ -2,6 +2,9 @@ MAKEFLAGS += --silent
 
 .PHONY: %
 
+test:
+	go test ./...
+
 run:
 	go run cmd/chip8/main.go $(ARGS)
 
