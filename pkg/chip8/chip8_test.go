@@ -229,7 +229,12 @@ func TestSkipIfVxNotEqualToVy(t *testing.T) {
 
 // ANNN
 func TestSetIndexToNumber(t *testing.T) {
-	t.Skip("TODO: ANNN")
+	rom := []byte{0xAF, 0xAB}
+	cpu := newCpu(rom)
+	cpu.tick()
+	if cpu.registers.Index != 0xFAB {
+		t.Errorf("SetIndexRegister should have gone to 0xFAB when not equal but it was [0x%X]", cpu.registers.Index)
+	}
 }
 
 // DXYN
