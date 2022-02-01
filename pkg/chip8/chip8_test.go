@@ -174,6 +174,7 @@ func TestSetVxToVyDirect(t *testing.T) {
 			t.Run(fmt.Sprintf("Set register V%X to register V%X", vx, vy), func(t *testing.T) {
 				rom := []byte{0x80 | vx, 0x00 | (vy << 4)}
 				cpu := newCpu(rom)
+				cpu.registers.VariableRegisters[vx] = 0x33
 				cpu.registers.VariableRegisters[vy] = 0xAB
 				cpu.tick()
 				if cpu.registers.VariableRegisters[vx] != cpu.registers.VariableRegisters[vy] {
@@ -191,6 +192,7 @@ func TestSetVxToVyBinaryOR(t *testing.T) {
 			t.Run(fmt.Sprintf("Set register V%X to register V%X", vx, vy), func(t *testing.T) {
 				rom := []byte{0x80 | vx, 0x01 | (vy << 4)}
 				cpu := newCpu(rom)
+				cpu.registers.VariableRegisters[vx] = 0x33
 				cpu.registers.VariableRegisters[vy] = 0xAB
 				cpu.tick()
 				if cpu.registers.VariableRegisters[vx] != cpu.registers.VariableRegisters[vx]|cpu.registers.VariableRegisters[vy] {
@@ -203,7 +205,20 @@ func TestSetVxToVyBinaryOR(t *testing.T) {
 
 // 8XY2
 func TestSetVxToVyBinaryAND(t *testing.T) {
-	t.Skip("TODO: 8XY2")
+	for vx := byte(0x0); vx <= 0xF; vx++ {
+		for vy := byte(0x0); vy <= 0xF; vy++ {
+			t.Run(fmt.Sprintf("Set register V%X to register V%X", vx, vy), func(t *testing.T) {
+				rom := []byte{0x80 | vx, 0x02 | (vy << 4)}
+				cpu := newCpu(rom)
+				cpu.registers.VariableRegisters[vx] = 0x33
+				cpu.registers.VariableRegisters[vy] = 0xAB
+				cpu.tick()
+				if cpu.registers.VariableRegisters[vx] != cpu.registers.VariableRegisters[vx]&cpu.registers.VariableRegisters[vy] {
+					t.Errorf("SetRegisterToRegisterBinaryAND register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, cpu.registers.VariableRegisters[vx]&cpu.registers.VariableRegisters[vy], cpu.registers.VariableRegisters[vx])
+				}
+			})
+		}
+	}
 }
 
 // 8XY3
