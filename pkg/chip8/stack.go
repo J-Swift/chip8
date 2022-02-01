@@ -13,3 +13,7 @@ func newStack() *Stack {
 func (s *Stack) push(addr int) {
 	s.innerStack = append(s.innerStack, addr)
 }
+
+func (s *Stack) pop() int {
+	return s.innerStack[len(s.innerStack)-1]
+}

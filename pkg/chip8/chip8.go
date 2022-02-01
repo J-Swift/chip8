@@ -61,10 +61,12 @@ func runRom(rom []byte) {
 		handled = false
 		switch n1 {
 		case 0x0:
-			// [00E0] clear screen
-			if b1 == 0x00 && b2 == 0xE0 {
+			if b1 == 0x00 && b2 == 0xE0 { // [00E0] clear screen
 				handled = true
 				screen.Clear()
+			} else if b1 == 0x00 && b2 == 0xEE { // [00EE] return from subroutine
+				handled = true
+				pc = stack.pop()
 			}
 		// [1NNN] jump to NNN
 		case 0x1:
