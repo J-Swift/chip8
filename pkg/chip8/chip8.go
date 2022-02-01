@@ -95,6 +95,54 @@ func runRom(rom []byte) {
 		case 0x7:
 			handled = true
 			registers.VariableRegisters[n2] = byte((int(registers.VariableRegisters[n2]) + int(b2)) % 0x1FF)
+		case 0x8:
+			switch n4 {
+			// [8XY0] Set VX to VY
+			case 0x0:
+				handled = true
+				registers.VariableRegisters[n2] = registers.VariableRegisters[n3]
+			// [8XY1] Set VX to binary OR with VY
+			case 0x1:
+				handled = true
+				registers.VariableRegisters[n2] |= registers.VariableRegisters[n3]
+			// [8XY2] Set VX to binary AND with VY
+			case 0x2:
+				handled = true
+				registers.VariableRegisters[n2] &= registers.VariableRegisters[n3]
+			// [8XY3] Set VX to binary XOR with VY
+			case 0x3:
+				handled = true
+				registers.VariableRegisters[n2] ^= registers.VariableRegisters[n3]
+			// [8XY4] Add VX to VY with carry
+			case 0x4:
+				handled = true
+				// check for overflow
+				if int(registers.VariableRegisters[n2])+int(registers.VariableRegisters[n3]) > 255 {
+					registers.VariableRegisters[0xF] = 1
+				} else {
+					registers.VariableRegisters[0xF] = 0
+				}
+				registers.VariableRegisters[n2] += registers.VariableRegisters[n3]
+			// [8XY5] Subtract VY from VX with carry
+			case 0x5:
+				handled = true
+				// check for underflow
+				if registers.VariableRegisters[n2] > registers.VariableRegisters[n3] {
+					registers.VariableRegisters[0xF] = 1
+				} else {
+					registers.VariableRegisters[0xF] = 0
+				}
+				registers.VariableRegisters[n2] -= registers.VariableRegisters[n3]
+			// [8XY7] Subtract VX from VY with carry
+			case 0x7:
+				handled = true
+				if registers.VariableRegisters[n3] > registers.VariableRegisters[n2] {
+					registers.VariableRegisters[0xF] = 1
+				} else {
+					registers.VariableRegisters[0xF] = 0
+				}
+				registers.VariableRegisters[n2] = registers.VariableRegisters[n3] - registers.VariableRegisters[n2]
+			}
 		// [9XY0] skip if VX not equal to VY
 		case 0x9:
 			handled = true
