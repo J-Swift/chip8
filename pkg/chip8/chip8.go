@@ -8,6 +8,7 @@ import (
 
 type quirks struct {
 	shiftLoadsYRegister                 bool
+	storeAndLoadIncrementsIndexRegister bool
 }
 
 // https://tobiasvl.github.io/blog/write-a-chip-8-emulator
@@ -27,6 +28,7 @@ func runRom(rom []byte) {
 
 	config := quirks{
 		shiftLoadsYRegister:                 false,
+		storeAndLoadIncrementsIndexRegister: false,
 	}
 
 	pc := 0x200
@@ -191,8 +193,7 @@ func runRom(rom []byte) {
 				registers.VariableRegisters[0xF] = 0
 			}
 		case 0xF:
-			// [FX33] binary-coded decimal conversion
-			if b2 == 0x33 {
+			if b2 == 0x33 { // [FX33] binary-coded decimal conversion
 				handled = true
 				vx := registers.VariableRegisters[n2]
 				hundreds := vx / 100
@@ -201,6 +202,26 @@ func runRom(rom []byte) {
 				memory.setAddress(registers.Index, hundreds)
 				memory.setAddress(registers.Index+1, tens)
 				memory.setAddress(registers.Index+2, ones)
+			} else if b2 == 0x55 { // [FX55] store registers in memory
+				handled = true
+				currentAddress := registers.Index
+				for currentRegister := byte(0); currentRegister <= n2; currentRegister++ {
+					memory.setAddress(currentAddress, registers.VariableRegisters[currentRegister])
+					currentAddress++
+					if config.storeAndLoadIncrementsIndexRegister {
+						registers.Index++
+					}
+				}
+			} else if b2 == 0x65 { // [FX65] load registers from memory
+				handled = true
+				currentAddress := registers.Index
+				for currentRegister := byte(0); currentRegister <= n2; currentRegister++ {
+					registers.VariableRegisters[currentRegister] = memory.getAddress(currentAddress)
+					currentAddress++
+					if config.storeAndLoadIncrementsIndexRegister {
+						registers.Index++
+					}
+				}
 			}
 		}
 
