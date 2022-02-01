@@ -4,6 +4,30 @@ import (
 	"testing"
 )
 
+func TestSanityCheck(t *testing.T) {
+	rom := []byte{}
+	cpu := newCpu(rom)
+
+	if cpu.pc != 0x200 {
+		t.Errorf("pc should have been 0x200 but was [%x]", cpu.pc)
+	}
+	if cpu.registers.Index != 0 {
+		t.Errorf("index register should be zeroed but was [%d]", cpu.registers.Index)
+	}
+	for i := 0; i < len(cpu.registers.VariableRegisters); i++ {
+		if cpu.registers.VariableRegisters[i] != 0 {
+			t.Errorf("registers should be zeroed but [V%x] was [%d]", i, cpu.registers.VariableRegisters[i])
+		}
+	}
+	for i := 0; i < len(cpu.screen.pixels); i++ {
+		if cpu.screen.pixels[i] {
+			y := i / cpu.screen.columns
+			x := (i - y*cpu.screen.columns)
+			t.Errorf("screen should be blanked but [%dx%d] was lit", x, y)
+		}
+	}
+}
+
 // 00E0
 func TestClearScreen(t *testing.T) {
 	t.Skip("TODO: 00E0")
