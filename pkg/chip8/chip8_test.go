@@ -617,7 +617,66 @@ func TestAddVxToIndex(t *testing.T) {
 
 // FX33
 func TestBinaryCodedDecimalConversion(t *testing.T) {
-	t.Skip("TODO: FX33")
+	t.Run("BinaryCodedDecimalConversion ones", func(t *testing.T) {
+		rom := []byte{0xFB, 0x33}
+		cpu := newCpu(rom)
+		cpu.registers.Index = 0x500
+		cpu.registers.VariableRegisters[0xB] = byte(1)
+		cpu.tick()
+
+		hundreds := cpu.memory.getAddress(cpu.registers.Index)
+		tens := cpu.memory.getAddress(cpu.registers.Index + 1)
+		ones := cpu.memory.getAddress(cpu.registers.Index + 2)
+		if hundreds != 0 {
+			t.Errorf("BCD should have set hundreds to 0 but was [%d]", hundreds)
+		}
+		if tens != 0 {
+			t.Errorf("BCD should have set tens to 0 but was [%d]", tens)
+		}
+		if ones != 1 {
+			t.Errorf("BCD should have set ones to 1 but was [%d]", ones)
+		}
+	})
+	t.Run("BinaryCodedDecimalConversion ones", func(t *testing.T) {
+		rom := []byte{0xFB, 0x33}
+		cpu := newCpu(rom)
+		cpu.registers.Index = 0x500
+		cpu.registers.VariableRegisters[0xB] = byte(21)
+		cpu.tick()
+
+		hundreds := cpu.memory.getAddress(cpu.registers.Index)
+		tens := cpu.memory.getAddress(cpu.registers.Index + 1)
+		ones := cpu.memory.getAddress(cpu.registers.Index + 2)
+		if hundreds != 0 {
+			t.Errorf("BCD should have set hundreds to 0 but was [%d]", hundreds)
+		}
+		if tens != 2 {
+			t.Errorf("BCD should have set tens to 2 but was [%d]", tens)
+		}
+		if ones != 1 {
+			t.Errorf("BCD should have set ones to 1 but was [%d]", ones)
+		}
+	})
+	t.Run("BinaryCodedDecimalConversion ones", func(t *testing.T) {
+		rom := []byte{0xFB, 0x33}
+		cpu := newCpu(rom)
+		cpu.registers.Index = 0x500
+		cpu.registers.VariableRegisters[0xB] = byte(213)
+		cpu.tick()
+
+		hundreds := cpu.memory.getAddress(cpu.registers.Index)
+		tens := cpu.memory.getAddress(cpu.registers.Index + 1)
+		ones := cpu.memory.getAddress(cpu.registers.Index + 2)
+		if hundreds != 2 {
+			t.Errorf("BCD should have set hundreds to 2 but was [%d]", hundreds)
+		}
+		if tens != 1 {
+			t.Errorf("BCD should have set tens to 1 but was [%d]", tens)
+		}
+		if ones != 3 {
+			t.Errorf("BCD should have set ones to 3 but was [%d]", ones)
+		}
+	})
 }
 
 // FX55
