@@ -136,7 +136,7 @@ func (cpu *cpu) tick() {
 			} else {
 				cpu.registers.VariableRegisters[0xF] = 0
 			}
-			cpu.registers.VariableRegisters[n2] -= cpu.registers.VariableRegisters[n3]
+			cpu.registers.VariableRegisters[n2] = cpu.registers.VariableRegisters[n2] - cpu.registers.VariableRegisters[n3]
 		// [8XY6] Shift VX right with carry
 		case 0x6:
 			handled = true
