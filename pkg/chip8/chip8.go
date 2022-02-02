@@ -121,7 +121,7 @@ func (cpu *cpu) tick() {
 		case 0x4:
 			handled = true
 			// check for overflow
-			if int(cpu.registers.VariableRegisters[n2])+int(cpu.registers.VariableRegisters[n3]) > 0xFF {
+			if cpu.registers.VariableRegisters[n2] > (0xFF - cpu.registers.VariableRegisters[n3]) {
 				cpu.registers.VariableRegisters[0xF] = 1
 			} else {
 				cpu.registers.VariableRegisters[0xF] = 0

@@ -315,8 +315,74 @@ func TestAddVyToVxWithCarry(t *testing.T) {
 }
 
 // 8XY5
-func TestSubtractVyFromVxWithCarry(t *testing.T) {
-	t.Skip("TODO: 8XY5")
+func TestSubtractVyFromVxWithBorrow(t *testing.T) {
+	t.Run("Subtract register VY from register VX no borrow smoketest", func(t *testing.T) {
+		rom := []byte{0x8A, 0xB5}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xA] = 0x01
+		cpu.registers.VariableRegisters[0xB] = 0x02
+		expected := byte(0xFF)
+		cpu.tick()
+		if cpu.registers.VariableRegisters[0xA] != expected {
+			t.Errorf("SubtractRegistersWithBorrow register [VA] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xA])
+		}
+		if cpu.registers.VariableRegisters[0xF] != 0 {
+			t.Errorf("SubtractRegistersWithBorrow borrow flag should not have been set when subtracting [0x%02X] from [0x%02X]", 0x02, 0x01)
+		}
+	})
+
+	t.Run("Subtract register VY from register VX with borrow smoketest", func(t *testing.T) {
+		rom := []byte{0x8A, 0xB5}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xA] = 0x02
+		cpu.registers.VariableRegisters[0xB] = 0x01
+		expected := byte(0x01)
+		cpu.tick()
+		if cpu.registers.VariableRegisters[0xA] != expected {
+			t.Errorf("SubtractRegistersWithBorrow register [VA] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xA])
+		}
+		if cpu.registers.VariableRegisters[0xF] != 1 {
+			t.Errorf("SubtractRegistersWithBorrow borrow flag should have been set when subtracting [0x%02X] from [0x%02X]", 0x01, 0x02)
+		}
+	})
+
+	// NOTE(jpr): no 0xF because its used for borrow flag
+	for vx := byte(0x0); vx <= 0xE; vx++ {
+		for vy := byte(0x0); vy <= 0xE; vy++ {
+			if vx == vy {
+				continue
+			}
+			t.Run(fmt.Sprintf("Add register V%X with register V%X no borrow", vx, vy), func(t *testing.T) {
+				rom := []byte{0x80 | vx, 0x05 | (vy << 4)}
+				cpu := newCpu(rom)
+				cpu.registers.VariableRegisters[vx] = 0x33
+				cpu.registers.VariableRegisters[vy] = 0xAB
+				expected := cpu.registers.VariableRegisters[vx] - cpu.registers.VariableRegisters[vy]
+				cpu.tick()
+				if cpu.registers.VariableRegisters[vx] != expected {
+					t.Errorf("SubtractRegistersWithBorrow register [V%X] should have been set to [V%X] [0x%02X] but it was [0x%02X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
+				}
+				if cpu.registers.VariableRegisters[0xF] != 0 {
+					t.Errorf("SubtractRegistersWithBorrow borrow flag should not have been set when subtracting [0x%02X] from [0x%02X]", vy, vx)
+				}
+			})
+
+			t.Run(fmt.Sprintf("Add register V%X with register V%X with borrow", vx, vy), func(t *testing.T) {
+				rom := []byte{0x80 | vx, 0x05 | (vy << 4)}
+				cpu := newCpu(rom)
+				cpu.registers.VariableRegisters[vx] = 0xAB
+				cpu.registers.VariableRegisters[vy] = 0x33
+				expected := cpu.registers.VariableRegisters[vx] - cpu.registers.VariableRegisters[vy]
+				cpu.tick()
+				if cpu.registers.VariableRegisters[vx] != expected {
+					t.Errorf("SubtractRegistersWithBorrow register [V%X] should have been set to [V%X] [0x%02X] but it was [0x%02X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
+				}
+				if cpu.registers.VariableRegisters[0xF] != 1 {
+					t.Errorf("SubtractRegistersWithBorrow borrow flag should have been set when subtracting [0x%02X] and [0x%02X]", vy, vx)
+				}
+			})
+		}
+	}
 }
 
 // 8XY6
