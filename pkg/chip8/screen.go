@@ -37,8 +37,8 @@ func (s *Screen) Clear() {
 func (s *Screen) Draw(x_coord int, y_coord int, spriteData []byte) bool {
 	didTurnOffPixel := false
 
-	wrapped_x_coord := x_coord % (s.columns - 1)
-	wrapped_y_coord := y_coord % (s.rows - 1)
+	wrapped_x_coord := x_coord % s.columns
+	wrapped_y_coord := y_coord % s.rows
 
 	for row := 0; row < len(spriteData); row++ {
 		for col := 0; col < 8; col++ {
@@ -47,6 +47,7 @@ func (s *Screen) Draw(x_coord int, y_coord int, spriteData []byte) bool {
 			if target_x_coord >= s.columns || target_y_coord >= s.rows {
 				continue
 			}
+
 			screenOffset := target_y_coord*s.rows + target_x_coord
 			currentSpriteBitIsSet := ((spriteData[row] << col) & 0b10000000) > 0
 
