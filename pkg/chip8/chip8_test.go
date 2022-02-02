@@ -59,7 +59,13 @@ func TestClearScreen(t *testing.T) {
 
 // 00EE
 func TestReturnFromSubroutine(t *testing.T) {
-	t.Skip("TODO: 00EE")
+	rom := []byte{0x00, 0xEE}
+	cpu := newCpu(rom)
+	cpu.stack.push(0x321)
+	cpu.tick()
+	if cpu.pc != 0x321 {
+		t.Errorf("return should set pc to stack pointer but it was [0x%X]", cpu.pc)
+	}
 }
 
 // 1NNN
