@@ -48,8 +48,8 @@ func (s *Screen) Draw(x_coord int, y_coord int, spriteData []byte) bool {
 				continue
 			}
 
-			screenOffset := target_y_coord*s.rows + target_x_coord
-			currentSpriteBitIsSet := ((spriteData[row] << col) & 0b10000000) > 0
+			screenOffset := target_y_coord*s.columns + target_x_coord
+			currentSpriteBitIsSet := (spriteData[row] & (0b10000000 >> col)) > 0
 
 			if currentSpriteBitIsSet {
 				// flipping a pixel from on to off
