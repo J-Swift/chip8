@@ -522,7 +522,7 @@ func TestSetIndexToNumber(t *testing.T) {
 	cpu := newCpu(rom)
 	cpu.tick()
 	if cpu.registers.Index != 0xFAB {
-		t.Errorf("SetIndexRegister should have gone to 0xFAB when not equal but it was [0x%X]", cpu.registers.Index)
+		t.Errorf("SetIndexRegister should have gone to 0xFAB when not equal but it was [0x%03X]", cpu.registers.Index)
 	}
 }
 

@@ -37,7 +37,7 @@ func newCpu(romData []byte) *cpu {
 	return &cpu
 }
 
-func (cpu *cpu) tick() {
+func (cpu *cpu) tick() bool {
 	// fmt.Printf("Reading PC [%x]\n", pc)
 	b1 := byte(cpu.memory.getAddress(cpu.pc))
 	b2 := byte(cpu.memory.getAddress(cpu.pc + 1))
@@ -64,7 +64,7 @@ func (cpu *cpu) tick() {
 		combined := (int(n2) << 8) | (int(n3) << 4) | int(n4)
 		if combined == cpu.pc-2 {
 			fmt.Printf("\nInfinite loop detected. Exiting....\n\n")
-			return
+			return false
 		}
 		cpu.pc = combined
 	// [2NNN] call subroutine at NNN
@@ -233,6 +233,8 @@ func (cpu *cpu) tick() {
 		fmt.Printf("[b1 0x%02X] [b2 0x%02X] [n1 0x%X] [n2 0x%X] [n3 0x%X] [n4 0x%X]\n", b1, b2, n1, n2, n3, n4)
 		panic(fmt.Sprintf("Unhandled instruction [0x%02X%02X] at pc [0x%04X] adjusted pc [0x%04X]", b1, b2, cpu.pc-2, cpu.pc-2-0x200))
 	}
+
+	return true
 }
 
 // https://tobiasvl.github.io/blog/write-a-chip-8-emulator
@@ -241,7 +243,9 @@ func runRom(rom []byte) {
 	cpu := newCpu(rom)
 
 	for {
-		cpu.tick()
+		if !cpu.tick() {
+			break
+		}
 	}
 }
 
