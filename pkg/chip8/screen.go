@@ -13,10 +13,11 @@ type Screen struct {
 	pixels         []bool
 	screenBuffer   []rune
 	drawingEnabled bool
+	fps            int
 }
 
 func newScreen() *Screen {
-	screen := Screen{columns: 64, rows: 32, offRune: '⬛', onRune: '🟨', drawingEnabled: true}
+	screen := Screen{columns: 64, rows: 32, offRune: '⬛', onRune: '🟨', drawingEnabled: true, fps: 60}
 	screen.resetBuffers()
 	return &screen
 }
@@ -79,5 +80,5 @@ func (s *Screen) doDraw() {
 	for row := 0; row < s.rows; row++ {
 		fmt.Println(string(s.screenBuffer[int(row)*int(s.columns) : int(row)*int(s.columns)+int(s.columns)]))
 	}
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(time.Duration(1000/s.fps) * time.Millisecond)
 }
