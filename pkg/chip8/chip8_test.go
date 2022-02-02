@@ -164,7 +164,32 @@ func TestSetVxToNumber(t *testing.T) {
 
 // 7XNN
 func TestAddNumberToVx(t *testing.T) {
-	t.Skip("TODO: 7XNN")
+	t.Run("AddNumberToVx no carry smoke test", func(t *testing.T) {
+		rom := []byte{0x7B, 0x01}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xB] = 0xFF
+		expected := byte(0x0)
+		cpu.tick()
+		if cpu.registers.VariableRegisters[0xB] != expected {
+			t.Errorf("AddNumberToVx Index register should have gone to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xB])
+		}
+		if cpu.registers.VariableRegisters[0xF] != 0 {
+			t.Errorf("AddNumberToVx carry register should not have been set when overflow occurred")
+		}
+	})
+
+	for vx := byte(0x0); vx <= 0xE; vx++ {
+		t.Run(fmt.Sprintf("AddNumberToVx register V%X", vx), func(t *testing.T) {
+			rom := []byte{0x70 | vx, 0x23}
+			cpu := newCpu(rom)
+			cpu.registers.VariableRegisters[vx] = 0x33
+			expected := cpu.registers.VariableRegisters[vx] + rom[1]
+			cpu.tick()
+			if cpu.registers.VariableRegisters[vx] != expected {
+				t.Errorf("AddNumberToVx register [V%X] should have been set to [0x%02X] but it was [0x%02X]", vx, expected, cpu.registers.VariableRegisters[vx])
+			}
+		})
+	}
 }
 
 // 8XY0
