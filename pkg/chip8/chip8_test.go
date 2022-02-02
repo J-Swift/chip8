@@ -73,6 +73,9 @@ func TestJumpToAddress(t *testing.T) {
 	rom := []byte{0x1F, 0xAB}
 	cpu := newCpu(rom)
 	cpu.tick()
+	if len(cpu.stack.innerStack) > 0 {
+		t.Errorf("jump should not push previous pc on top of stack")
+	}
 	if cpu.pc != 0xFAB {
 		t.Errorf("jump should set pc to 0xFAB but was [0x%X]", cpu.pc)
 	}
@@ -80,7 +83,16 @@ func TestJumpToAddress(t *testing.T) {
 
 // 2NNN
 func TestCallSubroutineAtAddress(t *testing.T) {
-	t.Skip("TODO: 2NNN")
+	rom := []byte{0x2F, 0xAB}
+	cpu := newCpu(rom)
+	cpu.tick()
+	topOfStack := cpu.stack.pop()
+	if topOfStack != 0x202 {
+		t.Errorf("CallSubroutine should push previous pc on top of stack but was [0x%X]", topOfStack)
+	}
+	if cpu.pc != 0xFAB {
+		t.Errorf("CallSubroutine should set pc to 0xFAB but was [0x%X]", cpu.pc)
+	}
 }
 
 // 3XNN
