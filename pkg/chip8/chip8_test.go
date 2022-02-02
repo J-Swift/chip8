@@ -508,7 +508,68 @@ func TestDrawSprite(t *testing.T) {
 
 // FX1E
 func TestAddVxToIndex(t *testing.T) {
-	t.Skip("TODO: FX1E")
+	t.Run("config.setOverflowOnAddToIndex disabled - overflow smoketest", func(t *testing.T) {
+		rom := []byte{0xFB, 0x1E}
+		cpu := newCpu(rom)
+		cpu.config.setOverflowOnAddToIndex = false
+		cpu.registers.Index = 0xFFF
+		cpu.registers.VariableRegisters[0xB] = 0x1
+		expected := 0x0
+		cpu.tick()
+		if cpu.registers.Index != expected {
+			t.Errorf("AddVxToIndex Index register should have gone to [0x%02X] but it was [0x%02X]", expected, cpu.registers.Index)
+		}
+		if cpu.registers.VariableRegisters[0xF] != 0 {
+			t.Errorf("AddVxToIndex carry register should not have been set when setOverflowOnAddToIndex is disabled")
+		}
+	})
+
+	t.Run("config.setOverflowOnAddToIndex enabled - no overflow smoketest", func(t *testing.T) {
+		rom := []byte{0xFB, 0x1E}
+		cpu := newCpu(rom)
+		cpu.config.setOverflowOnAddToIndex = true
+		cpu.registers.Index = 0xFFE
+		cpu.registers.VariableRegisters[0xB] = 0x1
+		expected := 0xFFF
+		cpu.tick()
+		if cpu.registers.Index != expected {
+			t.Errorf("AddVxToIndex Index register should have gone to [0x%02X] but it was [0x%02X]", expected, cpu.registers.Index)
+		}
+		if cpu.registers.VariableRegisters[0xF] != 0 {
+			t.Errorf("AddVxToIndex carry register should not have been set when setOverflowOnAddToIndex is enabled and no overflow occurred")
+		}
+	})
+
+	t.Run("config.setOverflowOnAddToIndex enabled - overflow smoketest", func(t *testing.T) {
+		rom := []byte{0xFB, 0x1E}
+		cpu := newCpu(rom)
+		cpu.config.setOverflowOnAddToIndex = true
+		cpu.registers.Index = 0xFFF
+		cpu.registers.VariableRegisters[0xB] = 0x1
+		expected := 0x0
+		cpu.tick()
+		if cpu.registers.Index != expected {
+			t.Errorf("AddVxToIndex Index register should have gone to [0x%02X] but it was [0x%02X]", expected, cpu.registers.Index)
+		}
+		if cpu.registers.VariableRegisters[0xF] != 1 {
+			t.Errorf("AddVxToIndex carry register should have been set when setOverflowOnAddToIndex is enabled and overflow occurred")
+		}
+	})
+
+	// NOTE(jpr): no 0xF because its used for borrow flag
+	for registerIdx := byte(0x0); registerIdx <= 0xE; registerIdx++ {
+		t.Run(fmt.Sprintf("Add V%X to Index register", registerIdx), func(t *testing.T) {
+			rom := []byte{0xF0 | registerIdx, 0x1E}
+			cpu := newCpu(rom)
+			cpu.registers.Index = 0x23
+			cpu.registers.VariableRegisters[registerIdx] = 0x12
+			expected := 0x35
+			cpu.tick()
+			if cpu.registers.Index != expected {
+				t.Errorf("AddVxToIndex Index register should have gone to [0x%02X] but it was [0x%02X]", expected, cpu.registers.Index)
+			}
+		})
+	}
 }
 
 // FX33
