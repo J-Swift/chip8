@@ -217,7 +217,7 @@ func TestSetVxToVyBinaryAND(t *testing.T) {
 				expected := cpu.registers.VariableRegisters[vx] & cpu.registers.VariableRegisters[vy]
 				cpu.tick()
 				if cpu.registers.VariableRegisters[vx] != expected {
-					t.Errorf("SetRegisterToRegisterBinaryAND register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
+					t.Errorf("SetRegisterToRegisterBinaryAND register [V%X] should have been set to [V%X] [0x%02X] but it was [0x%02X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
 				}
 			})
 		}
@@ -236,7 +236,7 @@ func TestSetVxToVyBinaryXOR(t *testing.T) {
 				expected := cpu.registers.VariableRegisters[vx] ^ cpu.registers.VariableRegisters[vy]
 				cpu.tick()
 				if cpu.registers.VariableRegisters[vx] != expected {
-					t.Errorf("SetRegisterToRegisterBinaryAND register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
+					t.Errorf("SetRegisterToRegisterBinaryAND register [V%X] should have been set to [V%X] [0x%02X] but it was [0x%02X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
 				}
 			})
 		}
@@ -253,7 +253,7 @@ func TestAddVyToVxWithCarry(t *testing.T) {
 		expected := byte(0xFF)
 		cpu.tick()
 		if cpu.registers.VariableRegisters[0xA] != expected {
-			t.Errorf("AddRegistersWithCarry register [VA] should have been set to [255] but it was [0x%X]", cpu.registers.VariableRegisters[0xA])
+			t.Errorf("AddRegistersWithCarry register [VA] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xA])
 		}
 		if cpu.registers.VariableRegisters[0xF] != 0 {
 			t.Errorf("AddRegistersWithCarry carry flag should not have been set when adding [0x%02X] and [0x%02X]", 0xFE, 0x01)
@@ -268,7 +268,7 @@ func TestAddVyToVxWithCarry(t *testing.T) {
 		expected := byte(0x0)
 		cpu.tick()
 		if cpu.registers.VariableRegisters[0xA] != expected {
-			t.Errorf("AddRegistersWithCarry register [VA] should have been set to [0] but it was [0x%X]", cpu.registers.VariableRegisters[0xA])
+			t.Errorf("AddRegistersWithCarry register [VA] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xA])
 		}
 		if cpu.registers.VariableRegisters[0xF] != 1 {
 			t.Errorf("AddRegistersWithCarry carry flag should have been set when adding [0x%02X] and [0x%02X]", 0xFE, 0x02)
@@ -289,10 +289,10 @@ func TestAddVyToVxWithCarry(t *testing.T) {
 				expected := cpu.registers.VariableRegisters[vx] + cpu.registers.VariableRegisters[vy]
 				cpu.tick()
 				if cpu.registers.VariableRegisters[vx] != expected {
-					t.Errorf("AddRegistersWithCarry register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
+					t.Errorf("AddRegistersWithCarry register [V%X] should have been set to [V%X] [0x%02X] but it was [0x%02X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
 				}
 				if cpu.registers.VariableRegisters[0xF] != 0 {
-					t.Errorf("AddRegistersWithCarry carry flag should not have been set when adding [%X] and [%X]", vx, vy)
+					t.Errorf("AddRegistersWithCarry carry flag should not have been set when adding [0x%02X] and [0x%02X]", vx, vy)
 				}
 			})
 
@@ -304,10 +304,10 @@ func TestAddVyToVxWithCarry(t *testing.T) {
 				expected := cpu.registers.VariableRegisters[vx] + cpu.registers.VariableRegisters[vy]
 				cpu.tick()
 				if cpu.registers.VariableRegisters[vx] != expected {
-					t.Errorf("AddRegistersWithCarry register [V%X] should have been set to [V%X] [0x%X] but it was [0x%X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
+					t.Errorf("AddRegistersWithCarry register [V%X] should have been set to [V%X] [0x%02X] but it was [0x%02X]", vx, vy, expected, cpu.registers.VariableRegisters[vx])
 				}
 				if cpu.registers.VariableRegisters[0xF] != 1 {
-					t.Errorf("AddRegistersWithCarry carry flag should have been set when adding [%X] and [%X]", vx, vy)
+					t.Errorf("AddRegistersWithCarry carry flag should have been set when adding [0x%02X] and [0x%02X]", vx, vy)
 				}
 			})
 		}
