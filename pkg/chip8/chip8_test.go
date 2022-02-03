@@ -838,5 +838,52 @@ func TestStoreRegistersInMemory(t *testing.T) {
 
 // FX65
 func TestLoadRegistersFromMemory(t *testing.T) {
-	t.Skip("TODO: FX65")
+	t.Run("LoadRegistersFromMemory config.storeAndLoadIncrementsIndexRegister disabled smoke test", func(t *testing.T) {
+		rom := []byte{0xFF, 0x65}
+		cpu := newCpu(rom)
+		cpu.config.storeAndLoadIncrementsIndexRegister = false
+		cpu.registers.Index = 0x500
+		cpu.tick()
+		if cpu.registers.Index != 0x500 {
+			t.Errorf("LoadRegistersFromMemory Index register should not be affected when storeAndLoadIncrementsIndexRegister is disabled")
+		}
+	})
+
+	t.Run("LoadRegistersFromMemory config.storeAndLoadIncrementsIndexRegister enabled smoke test", func(t *testing.T) {
+		rom := []byte{0xFF, 0x65}
+		cpu := newCpu(rom)
+		cpu.config.storeAndLoadIncrementsIndexRegister = true
+		cpu.registers.Index = 0x500
+		cpu.tick()
+		expected := 0x500 + 0xF + 1
+		if cpu.registers.Index != expected {
+			t.Errorf("LoadRegistersFromMemory Index register should have moved to [0x%03X] when storeAndLoadIncrementsIndexRegister is enabled, but was [0x%03X]", expected, cpu.registers.Index)
+		}
+	})
+
+	t.Run("LoadRegistersFromMemory", func(t *testing.T) {
+		for upToRegisterIdx := byte(0x0); upToRegisterIdx <= 0xF; upToRegisterIdx++ {
+			t.Run(fmt.Sprintf("LoadRegistersFromMemory up to [V%X]", upToRegisterIdx), func(t *testing.T) {
+				rom := []byte{0xF0 | upToRegisterIdx, 0x65}
+				cpu := newCpu(rom)
+				cpu.registers.Index = 0x500
+				for vx := byte(0x0); vx <= 0xF; vx++ {
+					cpu.memory.setAddress(cpu.registers.Index+int(vx), vx+1)
+				}
+				cpu.tick()
+
+				for regCheck := byte(0x0); regCheck <= 0xF; regCheck++ {
+					var expected byte
+					if regCheck > upToRegisterIdx {
+						expected = 0
+					} else {
+						expected = regCheck + 1
+					}
+					if cpu.registers.VariableRegisters[regCheck] != expected {
+						t.Errorf("LoadRegistersFromMemory register [V%X] should have been [0x%02X] but was [0x%02X]", regCheck, expected, cpu.registers.VariableRegisters[regCheck])
+					}
+				}
+			})
+		}
+	})
 }
