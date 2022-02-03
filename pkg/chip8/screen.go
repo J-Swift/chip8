@@ -76,6 +76,7 @@ func (s *Screen) doDraw() {
 		return
 	}
 
+	// Set console cursor to 0,0 so we overwrite, rather than flood, the output window
 	fmt.Printf("\033[0;0H")
 	for row := 0; row < s.rows; row++ {
 		fmt.Println(string(s.screenBuffer[int(row)*int(s.columns) : int(row)*int(s.columns)+int(s.columns)]))
