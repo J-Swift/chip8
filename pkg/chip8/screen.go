@@ -2,6 +2,7 @@ package chip8
 
 import (
 	"fmt"
+	"time"
 )
 
 type Screen struct {
@@ -11,6 +12,8 @@ type Screen struct {
 	onRune       rune
 	pixels       []bool
 	screenBuffer []rune
+
+	lastDrawAt time.Time
 }
 
 func newScreen() *Screen {
@@ -71,4 +74,7 @@ func (s *Screen) doDraw() {
 	for row := 0; row < s.rows; row++ {
 		fmt.Println(string(s.screenBuffer[int(row)*int(s.columns) : int(row)*int(s.columns)+int(s.columns)]))
 	}
+
+	fmt.Printf("[%0d FPS]\n", 1000/time.Since(s.lastDrawAt).Milliseconds())
+	s.lastDrawAt = time.Now()
 }
