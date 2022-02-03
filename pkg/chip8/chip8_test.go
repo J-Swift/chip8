@@ -719,6 +719,22 @@ func TestAddVxToIndex(t *testing.T) {
 	}
 }
 
+// FX29
+func TestLoadFontCharacterAddress(t *testing.T) {
+	for c := byte(0x0); c <= 0xF; c++ {
+		t.Run(fmt.Sprintf("LoadFontChar [%X]", c), func(t *testing.T) {
+			rom := []byte{0xF0 | c, 0x29}
+			cpu := newCpu(rom)
+			cpu.registers.Index = 0x500
+			expected := cpu.memory.getAddressForFontChar(c)
+			cpu.tick()
+			if cpu.registers.Index != expected {
+				t.Errorf("LoadFontChar Index register should have gone to [0x%02X] but it was [0x%02X]", expected, cpu.registers.Index)
+			}
+		})
+	}
+}
+
 // FX33
 func TestBinaryCodedDecimalConversion(t *testing.T) {
 	t.Run("BinaryCodedDecimalConversion ones", func(t *testing.T) {

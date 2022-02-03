@@ -197,6 +197,9 @@ func (cpu *cpu) tick() bool {
 				}
 			}
 			cpu.registers.Index = (cpu.registers.Index + int(cpu.registers.VariableRegisters[n2])) % 0x1000
+		} else if b2 == 0x29 { // [FX29] load address of font char
+			handled = true
+			cpu.registers.Index = cpu.memory.getAddressForFontChar(n2)
 		} else if b2 == 0x33 { // [FX33] binary-coded decimal conversion
 			handled = true
 			vx := cpu.registers.VariableRegisters[n2]
