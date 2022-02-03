@@ -14,12 +14,13 @@ type quirks struct {
 }
 
 type cpu struct {
-	memory    *Ram
-	screen    *Screen
-	registers *Registers
-	stack     *Stack
-	pc        int
-	config    quirks
+	memory     *Ram
+	screen     *Screen
+	registers  *Registers
+	stack      *Stack
+	pc         int
+	delayTimer byte
+	config     quirks
 }
 
 func newCpu(romData []byte) *cpu {
@@ -188,7 +189,10 @@ func (cpu *cpu) tick() bool {
 			cpu.registers.VariableRegisters[0xF] = 0
 		}
 	case 0xF:
-		if b2 == 0x1E { // [FX1E] Add to index
+		if b2 == 0x15 { // [FX15] Set delay timer
+			handled = true
+			cpu.delayTimer = cpu.registers.VariableRegisters[n2]
+		} else if b2 == 0x1E { // [FX1E] Add to index
 			handled = true
 			if cpu.config.setOverflowOnAddToIndex {
 				if int(cpu.registers.Index)+int(cpu.registers.VariableRegisters[n2]) > 0xFFF {

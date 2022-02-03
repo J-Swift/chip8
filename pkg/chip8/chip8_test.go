@@ -11,14 +11,17 @@ func TestSanityCheck(t *testing.T) {
 	cpu.screen.drawingEnabled = false
 
 	if cpu.pc != 0x200 {
-		t.Errorf("pc should have been 0x200 but was [%X]", cpu.pc)
+		t.Errorf("pc should have been 0x200 but was [0x%03X]", cpu.pc)
+	}
+	if cpu.delayTimer != 0 {
+		t.Errorf("delay timer should have been 0 but was [%d]", cpu.delayTimer)
 	}
 	if cpu.registers.Index != 0 {
-		t.Errorf("index register should be zeroed but was [%d]", cpu.registers.Index)
+		t.Errorf("index register should be zeroed but was [0x%03X]", cpu.registers.Index)
 	}
 	for i := 0; i < len(cpu.registers.VariableRegisters); i++ {
 		if cpu.registers.VariableRegisters[i] != 0 {
-			t.Errorf("registers should be zeroed but [V%X] was [%d]", i, cpu.registers.VariableRegisters[i])
+			t.Errorf("registers should be zeroed but [V%X] was [0x%02X]", i, cpu.registers.VariableRegisters[i])
 		}
 	}
 	for i := 0; i < len(cpu.screen.pixels); i++ {
@@ -651,6 +654,22 @@ func TestSetIndexToNumber(t *testing.T) {
 // DXYN
 func TestDrawSprite(t *testing.T) {
 	t.Skip("TODO: DXYN")
+}
+
+// FX15
+func TestSetDelayTimerToVx(t *testing.T) {
+	for vx := byte(0x0); vx <= 0xF; vx++ {
+		t.Run(fmt.Sprintf("SetDelayTimer to register V%X", vx), func(t *testing.T) {
+			rom := []byte{0xF0 | vx, 0x15}
+			cpu := newCpu(rom)
+			cpu.registers.VariableRegisters[vx] = 0x33
+			expected := cpu.registers.VariableRegisters[vx]
+			cpu.tick()
+			if cpu.delayTimer != expected {
+				t.Errorf("SetDelayTimer should have gone to [0x%02X] but was [0x%02X]", expected, cpu.delayTimer)
+			}
+		})
+	}
 }
 
 // FX1E
