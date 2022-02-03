@@ -441,9 +441,6 @@ func TestShiftVxRightWithCarry(t *testing.T) {
 		if cpu.registers.VariableRegisters[0xB] != expected {
 			t.Errorf("ShiftRight register [VB] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xB])
 		}
-		if cpu.registers.VariableRegisters[0xF] != 0 {
-			t.Errorf("ShiftRight LSB flag should have been 0, but was [0x%02X]", cpu.registers.VariableRegisters[0xF])
-		}
 	})
 
 	t.Run("config.shiftLoadsYRegister enabled - smoketest", func(t *testing.T) {
@@ -456,9 +453,6 @@ func TestShiftVxRightWithCarry(t *testing.T) {
 		cpu.tick()
 		if cpu.registers.VariableRegisters[0xB] != expected {
 			t.Errorf("ShiftRight register [VB] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xB])
-		}
-		if cpu.registers.VariableRegisters[0xF] != 0 {
-			t.Errorf("ShiftRight LSB flag should have been 0, but was [0x%02X]", cpu.registers.VariableRegisters[0xF])
 		}
 	})
 
@@ -486,7 +480,7 @@ func TestShiftVxRightWithCarry(t *testing.T) {
 			t.Errorf("ShiftRight register [VB] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xB])
 		}
 		if cpu.registers.VariableRegisters[0xF] != 1 {
-			t.Errorf("ShiftRight LSB flag should have been 0, but was [0x%02X]", cpu.registers.VariableRegisters[0xF])
+			t.Errorf("ShiftRight LSB flag should have been 1, but was [0x%02X]", cpu.registers.VariableRegisters[0xF])
 		}
 	})
 }
@@ -564,7 +558,59 @@ func TestSubtractVxFromVyWithBorrow(t *testing.T) {
 
 // 8XYE
 func TestShiftVxLeftWithCarry(t *testing.T) {
-	t.Skip("TODO: 8XYE")
+	t.Run("ShiftLeft config.shiftLoadsYRegister disabled - smoketest", func(t *testing.T) {
+		rom := []byte{0x8B, 0xCE}
+		cpu := newCpu(rom)
+		cpu.config.shiftLoadsYRegister = false
+		cpu.registers.VariableRegisters[0xB] = 0b10000000
+		cpu.registers.VariableRegisters[0xC] = 0b01000000
+		expected := byte(0b0)
+		cpu.tick()
+		if cpu.registers.VariableRegisters[0xB] != expected {
+			t.Errorf("ShiftLeft register [VB] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xB])
+		}
+	})
+
+	t.Run("ShiftLeft config.shiftLoadsYRegister enabled - smoketest", func(t *testing.T) {
+		rom := []byte{0x8B, 0xCE}
+		cpu := newCpu(rom)
+		cpu.config.shiftLoadsYRegister = true
+		cpu.registers.VariableRegisters[0xB] = 0b10000000
+		cpu.registers.VariableRegisters[0xC] = 0b01000000
+		expected := byte(0b10000000)
+		cpu.tick()
+		if cpu.registers.VariableRegisters[0xB] != expected {
+			t.Errorf("ShiftLeft register [VB] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xB])
+		}
+	})
+
+	t.Run("ShiftLeft 0", func(t *testing.T) {
+		rom := []byte{0x8B, 0xCE}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xB] = 0b01000000
+		expected := byte(0b10000000)
+		cpu.tick()
+		if cpu.registers.VariableRegisters[0xB] != expected {
+			t.Errorf("ShiftLeft register [VB] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xB])
+		}
+		if cpu.registers.VariableRegisters[0xF] != 0 {
+			t.Errorf("ShiftLeft MSB flag should have been 0, but was [0x%02X]", cpu.registers.VariableRegisters[0xF])
+		}
+	})
+
+	t.Run("ShiftLeft 1", func(t *testing.T) {
+		rom := []byte{0x8B, 0xCE}
+		cpu := newCpu(rom)
+		cpu.registers.VariableRegisters[0xB] = 0b10000000
+		expected := byte(0b00000000)
+		cpu.tick()
+		if cpu.registers.VariableRegisters[0xB] != expected {
+			t.Errorf("ShiftLeft register [VB] should have been set to [0x%02X] but it was [0x%02X]", expected, cpu.registers.VariableRegisters[0xB])
+		}
+		if cpu.registers.VariableRegisters[0xF] != 1 {
+			t.Errorf("ShiftLeft MSB flag should have been 1, but was [0x%02X]", cpu.registers.VariableRegisters[0xF])
+		}
+	})
 }
 
 // 9XY0
