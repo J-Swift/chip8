@@ -656,6 +656,22 @@ func TestDrawSprite(t *testing.T) {
 	t.Skip("TODO: DXYN")
 }
 
+// FX07
+func TestLoadDelayTimerToVx(t *testing.T) {
+	for vx := byte(0x0); vx <= 0xF; vx++ {
+		t.Run(fmt.Sprintf("LoadDelayTimer to register V%X", vx), func(t *testing.T) {
+			rom := []byte{0xF0 | vx, 0x07}
+			cpu := newCpu(rom)
+			cpu.delayTimer = 0x33
+			expected := cpu.delayTimer
+			cpu.tick()
+			if cpu.registers.VariableRegisters[vx] != expected {
+				t.Errorf("LoadDelayTimer should have set [V%X] to [0x%02X] but was [0x%02X]", vx, expected, cpu.registers.VariableRegisters[vx])
+			}
+		})
+	}
+}
+
 // FX15
 func TestSetDelayTimerToVx(t *testing.T) {
 	for vx := byte(0x0); vx <= 0xF; vx++ {

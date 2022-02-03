@@ -189,7 +189,10 @@ func (cpu *cpu) tick() bool {
 			cpu.registers.VariableRegisters[0xF] = 0
 		}
 	case 0xF:
-		if b2 == 0x15 { // [FX15] Set delay timer
+		if b2 == 0x07 { // [FX07] Load delay timer
+			handled = true
+			cpu.registers.VariableRegisters[n2] = cpu.delayTimer
+		} else if b2 == 0x15 { // [FX15] Set delay timer
 			handled = true
 			cpu.delayTimer = cpu.registers.VariableRegisters[n2]
 		} else if b2 == 0x1E { // [FX1E] Add to index
