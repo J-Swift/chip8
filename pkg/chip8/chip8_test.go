@@ -430,7 +430,7 @@ func TestSubtractVyFromVxWithBorrow(t *testing.T) {
 
 // 8XY6
 func TestShiftVxRightWithCarry(t *testing.T) {
-	t.Run("config.shiftLoadsYRegister disabled - smoketest", func(t *testing.T) {
+	t.Run("ShiftRight config.shiftLoadsYRegister disabled - smoketest", func(t *testing.T) {
 		rom := []byte{0x8B, 0xC6}
 		cpu := newCpu(rom)
 		cpu.config.shiftLoadsYRegister = false
@@ -443,7 +443,7 @@ func TestShiftVxRightWithCarry(t *testing.T) {
 		}
 	})
 
-	t.Run("config.shiftLoadsYRegister enabled - smoketest", func(t *testing.T) {
+	t.Run("ShiftRight config.shiftLoadsYRegister enabled - smoketest", func(t *testing.T) {
 		rom := []byte{0x8B, 0xC6}
 		cpu := newCpu(rom)
 		cpu.config.shiftLoadsYRegister = true
@@ -655,7 +655,7 @@ func TestDrawSprite(t *testing.T) {
 
 // FX1E
 func TestAddVxToIndex(t *testing.T) {
-	t.Run("config.setOverflowOnAddToIndex disabled - overflow smoketest", func(t *testing.T) {
+	t.Run("AddVxToIndex config.setOverflowOnAddToIndex disabled - overflow smoketest", func(t *testing.T) {
 		rom := []byte{0xFB, 0x1E}
 		cpu := newCpu(rom)
 		cpu.config.setOverflowOnAddToIndex = false
@@ -671,7 +671,7 @@ func TestAddVxToIndex(t *testing.T) {
 		}
 	})
 
-	t.Run("config.setOverflowOnAddToIndex enabled - no overflow smoketest", func(t *testing.T) {
+	t.Run("AddVxToIndex config.setOverflowOnAddToIndex enabled - no overflow smoketest", func(t *testing.T) {
 		rom := []byte{0xFB, 0x1E}
 		cpu := newCpu(rom)
 		cpu.config.setOverflowOnAddToIndex = true
@@ -687,7 +687,7 @@ func TestAddVxToIndex(t *testing.T) {
 		}
 	})
 
-	t.Run("config.setOverflowOnAddToIndex enabled - overflow smoketest", func(t *testing.T) {
+	t.Run("AddVxToIndex config.setOverflowOnAddToIndex enabled - overflow smoketest", func(t *testing.T) {
 		rom := []byte{0xFB, 0x1E}
 		cpu := newCpu(rom)
 		cpu.config.setOverflowOnAddToIndex = true
@@ -785,7 +785,55 @@ func TestBinaryCodedDecimalConversion(t *testing.T) {
 
 // FX55
 func TestStoreRegistersInMemory(t *testing.T) {
-	t.Skip("TODO: FX55")
+	t.Run("StoreRegistersToMemory config.storeAndLoadIncrementsIndexRegister disabled smoke test", func(t *testing.T) {
+		rom := []byte{0xFF, 0x55}
+		cpu := newCpu(rom)
+		cpu.config.storeAndLoadIncrementsIndexRegister = false
+		cpu.registers.Index = 0x500
+		cpu.tick()
+		if cpu.registers.Index != 0x500 {
+			t.Errorf("StoreRegistersToMemory Index register should not be affected when storeAndLoadIncrementsIndexRegister is disabled")
+		}
+	})
+
+	t.Run("StoreRegistersToMemory config.storeAndLoadIncrementsIndexRegister enabled smoke test", func(t *testing.T) {
+		rom := []byte{0xFF, 0x55}
+		cpu := newCpu(rom)
+		cpu.config.storeAndLoadIncrementsIndexRegister = true
+		cpu.registers.Index = 0x500
+		cpu.tick()
+		expected := 0x500 + 0xF + 1
+		if cpu.registers.Index != expected {
+			t.Errorf("StoreRegistersToMemory Index register should have moved to [0x%03X] when storeAndLoadIncrementsIndexRegister is enabled, but was [0x%03X]", expected, cpu.registers.Index)
+		}
+	})
+
+	t.Run("StoreRegistersToMemory", func(t *testing.T) {
+		for upToRegisterIdx := byte(0x0); upToRegisterIdx <= 0xF; upToRegisterIdx++ {
+			t.Run(fmt.Sprintf("StoreRegistersToMemory up to [V%X]", upToRegisterIdx), func(t *testing.T) {
+				rom := []byte{0xF0 | upToRegisterIdx, 0x55}
+				cpu := newCpu(rom)
+				cpu.registers.Index = 0x500
+				for vx := byte(0x0); vx <= 0xF; vx++ {
+					cpu.registers.VariableRegisters[vx] = vx + 1
+				}
+				cpu.tick()
+
+				memValues := cpu.memory.getAddressMulti(cpu.registers.Index, 0xF+1)
+				for regCheck := byte(0x0); regCheck <= 0xF; regCheck++ {
+					var expected byte
+					if regCheck > upToRegisterIdx {
+						expected = 0
+					} else {
+						expected = regCheck + 1
+					}
+					if memValues[regCheck] != expected {
+						t.Errorf("StoreRegistersToMemory register [V%X] should have been [0x%02X] but was [0x%02X]", regCheck, expected, memValues[regCheck])
+					}
+				}
+			})
+		}
+	})
 }
 
 // FX65
