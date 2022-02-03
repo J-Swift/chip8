@@ -2,7 +2,6 @@ package chip8
 
 import (
 	"fmt"
-	"time"
 )
 
 type Screen struct {
@@ -81,5 +80,4 @@ func (s *Screen) doDraw() {
 	for row := 0; row < s.rows; row++ {
 		fmt.Println(string(s.screenBuffer[int(row)*int(s.columns) : int(row)*int(s.columns)+int(s.columns)]))
 	}
-	time.Sleep(time.Duration(1000/s.fps) * time.Millisecond)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 type quirks struct {
@@ -249,6 +250,8 @@ func runRom(rom []byte) {
 		if !cpu.tick() {
 			break
 		}
+		// TODO(jpr): proper timer
+		time.Sleep(time.Duration(1000/100) * time.Millisecond)
 	}
 }
 
