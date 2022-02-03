@@ -20,7 +20,14 @@ type cpu struct {
 	stack      *Stack
 	pc         int
 	delayTimer byte
-	config     quirks
+
+	config quirks
+	// clock cycles per second
+	cpuHz int
+	// sound/delay timer decay per second
+	timerHz int
+	// display updates per seconds
+	displayHz int
 }
 
 func newCpu(romData []byte) *cpu {
@@ -30,11 +37,15 @@ func newCpu(romData []byte) *cpu {
 		registers: newRegisters(),
 		stack:     newStack(),
 		pc:        0x200,
+
 		config: quirks{
 			shiftLoadsYRegister:                 false,
 			storeAndLoadIncrementsIndexRegister: false,
 			setOverflowOnAddToIndex:             true,
 		},
+		cpuHz:     500,
+		timerHz:   60,
+		displayHz: 60,
 	}
 	return &cpu
 }
@@ -248,29 +259,69 @@ func (cpu *cpu) tick() bool {
 	return true
 }
 
+func max(a byte, b byte) byte {
+	if a > b {
+		return a
+	} else {
+		return b
+	}
+}
+
 // https://tobiasvl.github.io/blog/write-a-chip-8-emulator
 
 func runRom(rom []byte) {
 	cpu := newCpu(rom)
 
+	cpuTickEveryMs := 1000 / cpu.cpuHz
+	delayTickEveryMs := 1000 / cpu.timerHz
+	displayTickEveryMs := 1000 / cpu.displayHz
+
+	cpuTimer := cpuTickEveryMs
+	delayTimer := delayTickEveryMs
+	displayTimer := displayTickEveryMs
+
+	lastTick := time.Now()
+
+gameloop:
 	for {
-		if !cpu.tick() {
-			break
+		frameStart := time.Now()
+		deltaT := int(time.Since(lastTick).Milliseconds())
+
+		cpuTimer += deltaT
+		delayTimer += deltaT
+		displayTimer += deltaT
+
+		for cpuTimer >= cpuTickEveryMs {
+			cpuTimer -= cpuTickEveryMs
+			if !cpu.tick() {
+				cpu.screen.doDraw()
+				break gameloop
+			}
 		}
-		// TODO(jpr): proper timer
-		time.Sleep(time.Duration(1000/100) * time.Millisecond)
+
+		if displayTimer >= displayTickEveryMs {
+			displayTimer = 0
+			cpu.screen.doDraw()
+		}
+
+		for delayTimer >= delayTickEveryMs {
+			delayTimer -= delayTickEveryMs
+			cpu.delayTimer = max(0, cpu.delayTimer-1)
+		}
+
+		lastTick = time.Now()
+		frameElapsed := int(time.Since(frameStart).Milliseconds())
+
+		time.Sleep(time.Duration(delayTickEveryMs-frameElapsed) * time.Millisecond)
 	}
+	// TODO(jpr): stop sound
 }
 
 func loadRom(romPath string) ([]byte, error) {
 	bytes, err := ioutil.ReadFile(romPath)
-	// _, err := ioutil.ReadFile(romPath)
 	if err != nil {
 		return nil, err
 	}
-	// bytes := []byte{
-	// 	0x62, 0x0A, 0x63, 0x0C, 0xA2, 0x20, 0xD2, 0x36, 0x12, 0x40, 0xBA, 0x7C, 0xD6, 0xFE, 0x54, 0xAA,
-	// }
 	return bytes, nil
 }
 

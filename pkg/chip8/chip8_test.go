@@ -8,7 +8,6 @@ import (
 func TestSanityCheck(t *testing.T) {
 	rom := []byte{0x00, 0xE0}
 	cpu := newCpu(rom)
-	cpu.screen.drawingEnabled = false
 
 	if cpu.pc != 0x200 {
 		t.Errorf("pc should have been 0x200 but was [0x%03X]", cpu.pc)
@@ -46,7 +45,6 @@ func TestSanityCheck(t *testing.T) {
 func TestClearScreen(t *testing.T) {
 	rom := []byte{0x00, 0xE0}
 	cpu := newCpu(rom)
-	cpu.screen.drawingEnabled = false
 	for i := 0; i < len(cpu.screen.pixels); i++ {
 		cpu.screen.pixels[i] = true
 	}

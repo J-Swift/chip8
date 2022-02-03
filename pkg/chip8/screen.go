@@ -5,18 +5,16 @@ import (
 )
 
 type Screen struct {
-	columns        int
-	rows           int
-	offRune        rune
-	onRune         rune
-	pixels         []bool
-	screenBuffer   []rune
-	drawingEnabled bool
-	fps            int
+	columns      int
+	rows         int
+	offRune      rune
+	onRune       rune
+	pixels       []bool
+	screenBuffer []rune
 }
 
 func newScreen() *Screen {
-	screen := Screen{columns: 64, rows: 32, offRune: '⬛', onRune: '🟨', drawingEnabled: true, fps: 60}
+	screen := Screen{columns: 64, rows: 32, offRune: '⬛', onRune: '🟨'}
 	screen.resetBuffers()
 	return &screen
 }
@@ -31,7 +29,6 @@ func (s *Screen) resetBuffers() {
 
 func (s *Screen) Clear() {
 	s.resetBuffers()
-	s.doDraw()
 }
 
 func (s *Screen) Draw(x_coord int, y_coord int, spriteData []byte) bool {
@@ -65,16 +62,10 @@ func (s *Screen) Draw(x_coord int, y_coord int, spriteData []byte) bool {
 		}
 	}
 
-	s.doDraw()
-
 	return didTurnOffPixel
 }
 
 func (s *Screen) doDraw() {
-	if !s.drawingEnabled {
-		return
-	}
-
 	// Set console cursor to 0,0 so we overwrite, rather than flood, the output window
 	fmt.Printf("\033[0;0H")
 	for row := 0; row < s.rows; row++ {
