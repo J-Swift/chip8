@@ -649,6 +649,33 @@ func TestSetIndexToNumber(t *testing.T) {
 	}
 }
 
+// CXNN
+func TestRandomNumber(t *testing.T) {
+	hitMin := false
+	hitMax := false
+	for i := 0; i < 10000; i++ {
+		rom := []byte{0xCB, 0xCE}
+		cpu := newCpu(rom)
+		cpu.tick()
+		regVal := cpu.registers.VariableRegisters[0xB]
+		if regVal == 0 {
+			hitMin = true
+		} else if regVal == 0xCE {
+			hitMax = true
+		}
+		if !(0 <= regVal && regVal <= 0xCE) {
+			t.Errorf("RandomNumber should have been between [0,0xCE] but was [0x%02X]", regVal)
+		}
+	}
+
+	if !hitMin {
+		t.Errorf("RandomNumber should have generated a 0")
+	}
+	if !hitMax {
+		t.Errorf("RandomNumber should have generated a 0xCE")
+	}
+}
+
 // DXYN
 func TestDrawSprite(t *testing.T) {
 	t.Skip("TODO: DXYN")

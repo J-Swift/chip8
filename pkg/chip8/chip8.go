@@ -3,6 +3,7 @@ package chip8
 import (
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"time"
 )
@@ -28,6 +29,7 @@ type cpu struct {
 	timerHz int
 	// display updates per seconds
 	displayHz int
+	random    *rand.Rand
 }
 
 func newCpu(romData []byte) *cpu {
@@ -46,6 +48,7 @@ func newCpu(romData []byte) *cpu {
 		cpuHz:     500,
 		timerHz:   60,
 		displayHz: 60,
+		random:    rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 	return &cpu
 }
@@ -187,6 +190,10 @@ func (cpu *cpu) tick() bool {
 		handled = true
 		combined := (int(n2) << 8) | (int(n3) << 4) | int(n4)
 		cpu.registers.Index = combined
+	// [CXNN] Set register to random number masked by NN
+	case 0xC:
+		handled = true
+		cpu.registers.VariableRegisters[n2] = byte(cpu.random.Int()) & b2
 	// [DXYN] Display N pixels of data at coord X,Y
 	case 0xD:
 		// fmt.Printf("[%x%x] [%d] [%d] [%d]\n", b1, b2, cpu.registers.VariableRegisters[0], cpu.registers.VariableRegisters[1], cpu.registers.Index)
